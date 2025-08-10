@@ -33,6 +33,7 @@
           <div id="recPsu" class="font-semibold">0 W</div>
         </div>
         <button id="btnExport" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-black">Copy Link</button>
+      <button id="btnCopySpecs" class="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200">Copy Specs</button>
         
         <button id="btnClear" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Clear</button>
       </div>
@@ -103,16 +104,34 @@
     </div>
   </template>
 
-  <script>
+  <script>// === PC Builder Web App (with hash-based share/import) ===
+// Author: Modified by ChatGPT
+// Notes: Comments added as if by an experienced CS student, explaining logic and design.
+
+
     // ---------- Data ----------
     const partsDB = {
       cpus: [
-        { id: 'cpu-12900k', brand: 'Intel', model: 'Core i9-12900K', socket: 'LGA1700', supportedMemory: ['DDR4','DDR5'], tdp: 241, igpu: true, pcieVersion: 5 },
-        { id: 'cpu-14900kf', brand: 'Intel', model: 'Core i9-14900KF', socket: 'LGA1700', supportedMemory: ['DDR4','DDR5'], tdp: 253, igpu: false, pcieVersion: 5 },
-        { id: 'cpu-7600', brand: 'AMD', model: 'Ryzen 5 7600', socket: 'AM5', supportedMemory: ['DDR5'], tdp: 65, igpu: true, pcieVersion: 5 },
-        { id: 'cpu-5800x3d', brand: 'AMD', model: 'Ryzen 7 5800X3D', socket: 'AM4', supportedMemory: ['DDR4'], tdp: 105, igpu: false, pcieVersion: 4 },
-        { id: 'cpu-i7-4770', brand: 'Intel', model: 'Core i7-4770', socket: 'LGA1150', supportedMemory: ['DDR3'], tdp: 84, igpu: true, pcieVersion: 3 },
-      ],
+        {'id': 'cpu-12400f', 'brand': 'Intel', 'model': 'Core i5-12400F', 'socket': 'LGA1700', 'supportedMemory': ['DDR4', 'DDR5'], 'tdp': 65, 'igpu': false, 'pcieVersion': 5},
+        {'id': 'cpu-13400f', 'brand': 'Intel', 'model': 'Core i5-13400F', 'socket': 'LGA1700', 'supportedMemory': ['DDR4', 'DDR5'], 'tdp': 65, 'igpu': false, 'pcieVersion': 5},
+        {'id': 'cpu-14400f', 'brand': 'Intel', 'model': 'Core i5-14400F', 'socket': 'LGA1700', 'supportedMemory': ['DDR4', 'DDR5'], 'tdp': 65, 'igpu': false, 'pcieVersion': 5},
+        {'id': 'cpu-14600kf', 'brand': 'Intel', 'model': 'Core i5-14600KF', 'socket': 'LGA1700', 'supportedMemory': ['DDR4', 'DDR5'], 'tdp': 125, 'igpu': false, 'pcieVersion': 5},
+        {'id': 'cpu-14700kf', 'brand': 'Intel', 'model': 'Core i7-14700KF', 'socket': 'LGA1700', 'supportedMemory': ['DDR4', 'DDR5'], 'tdp': 125, 'igpu': false, 'pcieVersion': 5},
+        {'id': 'cpu-14900kf', 'brand': 'Intel', 'model': 'Core i9-14900KF', 'socket': 'LGA1700', 'supportedMemory': ['DDR4', 'DDR5'], 'tdp': 125, 'igpu': false, 'pcieVersion': 5},
+        {'id': 'cpu-5500', 'brand': 'AMD', 'model': 'Ryzen 5 5500', 'socket': 'AM4', 'supportedMemory': ['DDR4'], 'tdp': 65, 'igpu': false, 'pcieVersion': 4},
+        {'id': 'cpu-5600', 'brand': 'AMD', 'model': 'Ryzen 5 5600', 'socket': 'AM4', 'supportedMemory': ['DDR4'], 'tdp': 65, 'igpu': false, 'pcieVersion': 4},
+        {'id': 'cpu-7500f', 'brand': 'AMD', 'model': 'Ryzen 5 7500F', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 65, 'igpu': false, 'pcieVersion': 5},
+        {'id': 'cpu-7600', 'brand': 'AMD', 'model': 'Ryzen 5 7600', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 65, 'igpu': true, 'pcieVersion': 5},
+        {'id': 'cpu-7600x', 'brand': 'AMD', 'model': 'Ryzen 5 7600X', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 105, 'igpu': true, 'pcieVersion': 5},
+        {'id': 'cpu-7700', 'brand': 'AMD', 'model': 'Ryzen 5 7700', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 65, 'igpu': true, 'pcieVersion': 5},
+        {'id': 'cpu-8400f', 'brand': 'AMD', 'model': 'Ryzen 5 8400F', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 65, 'igpu': false, 'pcieVersion': 5},
+        {'id': 'cpu-9600x', 'brand': 'AMD', 'model': 'Ryzen 5 9600X', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 105, 'igpu': true, 'pcieVersion': 5},
+        {'id': 'cpu-5700x', 'brand': 'AMD', 'model': 'Ryzen 7 5700X', 'socket': 'AM4', 'supportedMemory': ['DDR4'], 'tdp': 65, 'igpu': false, 'pcieVersion': 4},
+        {'id': 'cpu-5800x', 'brand': 'AMD', 'model': 'Ryzen 7 5800X', 'socket': 'AM4', 'supportedMemory': ['DDR4'], 'tdp': 105, 'igpu': false, 'pcieVersion': 4},
+        {'id': 'cpu-7700x', 'brand': 'AMD', 'model': 'Ryzen 7 7700', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 65, 'igpu': true, 'pcieVersion': 5},
+        {'id': 'cpu-7800x3d', 'brand': 'AMD', 'model': 'Ryzen 7 7800X3D', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 120, 'igpu': true, 'pcieVersion': 5},
+        {'id': 'cpu-8700f', 'brand': 'AMD', 'model': 'Ryzen 7 8700F', 'socket': 'AM5', 'supportedMemory': ['DDR5'], 'tdp': 65, 'igpu': false, 'pcieVersion': 5}
+    ],
       motherboards: [
         { id: 'mb-z690-ddr5', brand: 'MSI', model: 'PRO Z690-A DDR5', socket: 'LGA1700', memoryType: 'DDR5', dimmSlots: 4, maxMemoryGB: 128, formFactor: 'ATX', m2Slots: 4, sataPorts: 6, pcieX16Slots: 2, pcieVersion: 5, chipset: 'Z690' },
         { id: 'mb-b660-ddr4', brand: 'ASUS', model: 'TUF B660-PLUS WIFI D4', socket: 'LGA1700', memoryType: 'DDR4', dimmSlots: 4, maxMemoryGB: 128, formFactor: 'ATX', m2Slots: 2, sataPorts: 4, pcieX16Slots: 1, pcieVersion: 4, chipset: 'B660' },
@@ -172,7 +191,8 @@
     // ---------- Utils ----------
     const pretty = (x) => JSON.stringify(x, null, 2);
 
-    function estimateWattage(b) {
+    // Function: estimateWattage - see below for purpose
+function estimateWattage(b) {
       const baseBoard = 50;
       const ram = b.ram ? Math.max(8, Math.ceil(b.ram.sizeGB / 16) * 6) : 0;
       const nvme = (b.storageNVMe || []).length * 5;
@@ -184,7 +204,8 @@
       return { estLoad: total, recPSU };
     }
 
-    function checkCompatibility(b) {
+    // Function: checkCompatibility - see below for purpose
+function checkCompatibility(b) {
       const issues = [];
       const warns = [];
       const { cpu, motherboard, ram, gpu, psu, case_: pcCase } = b;
@@ -221,7 +242,8 @@
       return { issues, warns, ...estimateWattage(b) };
     }
 
-    function compatReason(kind, part) {
+    // Function: compatReason - see below for purpose
+function compatReason(kind, part) {
       const { cpu, motherboard, ram, gpu, psu, case_: pcCase, storageNVMe, storageSATA } = build;
       switch (kind) {
         case 'cpu':
@@ -268,7 +290,8 @@
     const sectionTpl = document.getElementById('sectionTemplate');
     const cardTpl = document.getElementById('cardTemplate');
 
-    function createSection({ id, label, subtitle }) {
+    // Function: createSection - see below for purpose
+function createSection({ id, label, subtitle }) {
       const node = sectionTpl.content.cloneNode(true);
       const section = node.querySelector('section');
       section.id = id;
@@ -277,11 +300,13 @@
       return section;
     }
 
-    function renderTOC() {
+    // Function: renderTOC - see below for purpose
+function renderTOC() {
       const toc = document.getElementById('toc');
       toc.innerHTML = '';
       steps.forEach(s => {
-        const a = document.createElement('a');
+        // Create DOM element for: a
+const a = document.createElement('a');
         a.href = `#${s.id}`;
         a.className = 'block';
         a.innerHTML = `<div class=\"flex items-center gap-3 px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900\"><div class=\"w-2 h-2 rounded-full bg-zinc-300\"></div><span class=\"text-sm font-medium\">${s.label}</span></div>`;
@@ -289,11 +314,13 @@
       });
     }
 
-    function partSummary(part) {
+    // Function: partSummary - see below for purpose
+function partSummary(part) {
       const o = { ...part }; delete o.id; return pretty(o);
     }
 
-    function makeCard(kind, part, selected, reason, onClick) {
+    // Function: makeCard - see below for purpose
+function makeCard(kind, part, selected, reason, onClick) {
       const node = cardTpl.content.cloneNode(true);
       const card = node.children[0];
       const warn = card.querySelector('.warn');
@@ -329,7 +356,8 @@
       return card;
     }
 
-    function sortByCompat(kind, arr, compatFirst, q, reasonFn) {
+    // Function: sortByCompat - see below for purpose
+function sortByCompat(kind, arr, compatFirst, q, reasonFn) {
       const filtered = arr.filter(p => !q || JSON.stringify(p).toLowerCase().includes(q.toLowerCase()));
       if (!compatFirst) return filtered;
       const scored = filtered.map(p => ({ p, bad: !!reasonFn(p) }));
@@ -337,7 +365,8 @@
       return scored.map(x => x.p);
     }
 
-    function render() {
+    // Function: render - see below for purpose
+function render() {
       renderTOC();
       content.innerHTML = '';
       const filterCompat = document.getElementById('filterCompat').checked;
@@ -347,7 +376,8 @@
       const secCPU = createSection(steps[0]);
       const searchCPU = secCPU.querySelector('.search');
       const listCPU = secCPU.querySelector('.items');
-      function drawCPU() {
+      // Function: drawCPU - see below for purpose
+function drawCPU() {
         listCPU.innerHTML = '';
         const arr = sortByCompat('cpu', partsDB.cpus, filterCompat, searchCPU.value, p => compatReason('cpu', p));
         arr.forEach(p => listCPU.appendChild(makeCard('cpu', p, build.cpu?.id===p.id, compatReason('cpu', p), () => { build.cpu = (build.cpu?.id===p.id)? null : p; renderAllMeta(); drawCPU(); drawMB(); drawRAM(); drawPSU(); drawCase(); } )));
@@ -360,7 +390,8 @@
       const secMB = createSection(steps[1]);
       const searchMB = secMB.querySelector('.search');
       const listMB = secMB.querySelector('.items');
-      function drawMB() {
+      // Function: drawMB - see below for purpose
+function drawMB() {
         listMB.innerHTML = '';
         const arr = sortByCompat('motherboard', partsDB.motherboards, filterCompat, searchMB.value, p => compatReason('motherboard', p));
         arr.forEach(p => listMB.appendChild(makeCard('motherboard', p, build.motherboard?.id===p.id, compatReason('motherboard', p), () => { build.motherboard = (build.motherboard?.id===p.id)? null : p; renderAllMeta(); drawCPU(); drawMB(); drawRAM(); drawStorage(); drawCase(); } )));
@@ -373,7 +404,8 @@
       const secRAM = createSection(steps[2]);
       const searchRAM = secRAM.querySelector('.search');
       const listRAM = secRAM.querySelector('.items');
-      function drawRAM() {
+      // Function: drawRAM - see below for purpose
+function drawRAM() {
         listRAM.innerHTML = '';
         const arr = sortByCompat('ram', partsDB.rams, filterCompat, searchRAM.value, p => compatReason('ram', p));
         arr.forEach(p => listRAM.appendChild(makeCard('ram', p, build.ram?.id===p.id, compatReason('ram', p), () => { build.ram = (build.ram?.id===p.id)? null : p; renderAllMeta(); drawRAM(); drawPSU(); } )));
@@ -386,7 +418,8 @@
       const secGPU = createSection(steps[3]);
       const searchGPU = secGPU.querySelector('.search');
       const listGPU = secGPU.querySelector('.items');
-      function drawGPU() {
+      // Function: drawGPU - see below for purpose
+function drawGPU() {
         listGPU.innerHTML = '';
         const arr = sortByCompat('gpu', partsDB.gpus, filterCompat, searchGPU.value, p => compatReason('gpu', p));
         arr.forEach(p => listGPU.appendChild(makeCard('gpu', p, build.gpu?.id===p.id, compatReason('gpu', p), () => { build.gpu = (build.gpu?.id===p.id)? null : p; renderAllMeta(); drawGPU(); drawPSU(); drawCase(); } )));
@@ -401,22 +434,29 @@
       const listSTO = secSTO.querySelector('.items');
       const extrasSTO = secSTO.querySelector('.extras');
       extrasSTO.classList.remove('hidden');
-      function drawStorage() {
+      // Function: drawStorage - see below for purpose
+function drawStorage() {
         listSTO.innerHTML=''; extrasSTO.innerHTML='';
         const nvmeArr = sortByCompat('nvme', partsDB.storages.filter(s=>s.type==='NVMe'), filterCompat, searchSTO.value, p=>compatReason('nvme', p));
         const sataArr = sortByCompat('sata', partsDB.storages.filter(s=>s.type==='SATA'), filterCompat, searchSTO.value, p=>compatReason('sata', p));
-        const nvmeHeader = document.createElement('h3'); nvmeHeader.className='font-medium mb-2'; nvmeHeader.textContent='NVMe (M.2)'; listSTO.appendChild(nvmeHeader);
+        // Create DOM element for: nvmeHeader
+const nvmeHeader = document.createElement('h3'); nvmeHeader.className='font-medium mb-2'; nvmeHeader.textContent='NVMe (M.2)'; listSTO.appendChild(nvmeHeader);
         nvmeArr.forEach(p => listSTO.appendChild(makeCard('nvme', p, false, compatReason('nvme', p), () => { build.storageNVMe.push(p); renderAllMeta(); drawStorage(); } )));
-        const sataHeader = document.createElement('h3'); sataHeader.className='font-medium my-2'; sataHeader.textContent='SATA (SSD/HDD)'; listSTO.appendChild(sataHeader);
+        // Create DOM element for: sataHeader
+const sataHeader = document.createElement('h3'); sataHeader.className='font-medium my-2'; sataHeader.textContent='SATA (SSD/HDD)'; listSTO.appendChild(sataHeader);
         sataArr.forEach(p => listSTO.appendChild(makeCard('sata', p, false, compatReason('sata', p), () => { build.storageSATA.push(p); renderAllMeta(); drawStorage(); } )));
-        const tagWrap = document.createElement('div');
+        // Create DOM element for: tagWrap
+const tagWrap = document.createElement('div');
         tagWrap.innerHTML = `<div class="text-sm font-medium mb-1">Your Drives</div>`;
-        const tags = document.createElement('div'); tags.className='flex flex-wrap gap-2';
+        // Create DOM element for: tags
+const tags = document.createElement('div'); tags.className='flex flex-wrap gap-2';
         [...build.storageNVMe.map((d,i)=>({d,i,type:'nvme'})), ...build.storageSATA.map((d,i)=>({d,i,type:'sata'}))].forEach(({d,i,type})=>{
-          const span = document.createElement('span');
+          // Create DOM element for: span
+const span = document.createElement('span');
           span.className='inline-flex items-center gap-2 px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-sm';
           span.textContent=`${d.brand} ${d.model}`;
-          const x = document.createElement('button'); x.className='text-rose-600'; x.textContent='✕';
+          // Create DOM element for: x
+const x = document.createElement('button'); x.className='text-rose-600'; x.textContent='✕';
           x.addEventListener('click', ()=>{ if(type==='nvme') build.storageNVMe.splice(i,1); else build.storageSATA.splice(i,1); renderAllMeta(); drawStorage(); });
           span.appendChild(x); tags.appendChild(span);
         });
@@ -430,7 +470,8 @@
       const secPSU = createSection(steps[5]);
       const searchPSU = secPSU.querySelector('.search');
       const listPSU = secPSU.querySelector('.items');
-      function drawPSU() {
+      // Function: drawPSU - see below for purpose
+function drawPSU() {
         listPSU.innerHTML = '';
         const arr = sortByCompat('psu', partsDB.psus, filterCompat, searchPSU.value, p=>compatReason('psu', p));
         arr.forEach(p => listPSU.appendChild(makeCard('psu', p, build.psu?.id===p.id, compatReason('psu', p), () => { build.psu = (build.psu?.id===p.id)? null : p; renderAllMeta(); drawPSU(); } )));
@@ -443,7 +484,8 @@
       const secCASE = createSection(steps[6]);
       const searchCASE = secCASE.querySelector('.search');
       const listCASE = secCASE.querySelector('.items');
-      function drawCase() {
+      // Function: drawCase - see below for purpose
+function drawCase() {
         listCASE.innerHTML='';
         const arr = sortByCompat('case', partsDB.cases, filterCompat, searchCASE.value, p=>compatReason('case', p));
         arr.forEach(p => listCASE.appendChild(makeCard('case', p, build.case_?.id===p.id, compatReason('case', p), () => { build.case_ = (build.case_?.id===p.id)? null : p; renderAllMeta(); drawCase(); } )));
@@ -457,15 +499,23 @@
       secSUM.querySelector('.search').classList.add('hidden');
       const listSUM = secSUM.querySelector('.items');
       listSUM.classList.remove('grid');
-      function drawSummary(){
+      // Function: drawSummary - see below for purpose
+function drawSummary(){
         listSUM.innerHTML='';
-        const grid = document.createElement('div'); grid.className='grid md:grid-cols-2 gap-6 w-full';
-        const left = document.createElement('div'); left.className='space-y-3';
-        const right = document.createElement('div'); right.className='space-y-3';
-        function row(label, val){
-          const el = document.createElement('div'); el.className='flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 py-2';
-          const l = document.createElement('div'); l.className='text-sm text-zinc-500'; l.textContent=label;
-          const r = document.createElement('div'); r.className='text-sm font-medium'; r.textContent = val || '—';
+        // Create DOM element for: grid
+const grid = document.createElement('div'); grid.className='grid md:grid-cols-2 gap-6 w-full';
+        // Create DOM element for: left
+const left = document.createElement('div'); left.className='space-y-3';
+        // Create DOM element for: right
+const right = document.createElement('div'); right.className='space-y-3';
+        // Function: row - see below for purpose
+function row(label, val){
+          // Create DOM element for: el
+const el = document.createElement('div'); el.className='flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 py-2';
+          // Create DOM element for: l
+const l = document.createElement('div'); l.className='text-sm text-zinc-500'; l.textContent=label;
+          // Create DOM element for: r
+const r = document.createElement('div'); r.className='text-sm font-medium'; r.textContent = val || '—';
           el.appendChild(l); el.appendChild(r); left.appendChild(el);
         }
         row('CPU', build.cpu && `${build.cpu.brand} ${build.cpu.model}`);
@@ -477,13 +527,15 @@
         row('PSU', build.psu && `${build.psu.brand} ${build.psu.model} (${build.psu.wattage}W)`);
         row('Case', build.case_ && `${build.case_.brand} ${build.case_.model}`);
 
-        const meta = document.createElement('div'); meta.className='grid grid-cols-2 gap-3';
+        // Create DOM element for: meta
+const meta = document.createElement('div'); meta.className='grid grid-cols-2 gap-3';
         meta.innerHTML = `
           <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"><div class="text-xs text-zinc-500">Estimated Load</div><div class="font-semibold">${estimateWattage(build).estLoad} W</div></div>
           <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"><div class="text-xs text-zinc-500">Recommended PSU</div><div class="font-semibold">${estimateWattage(build).recPSU} W</div></div>`;
 
         const comp = checkCompatibility(build);
-        const msg = document.createElement('div');
+        // Create DOM element for: msg
+const msg = document.createElement('div');
         if (comp.issues.length===0){
           msg.className='p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700';
           msg.textContent='✅ No blocking compatibility issues detected.';
@@ -491,14 +543,38 @@
           msg.className='p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-700';
           msg.innerHTML = '<div class="font-semibold mb-1">Blocking Issues</div>' + '<ul class="list-disc ml-5 space-y-1 text-sm">' + comp.issues.map(x=>`<li>${x}</li>`).join('') + '</ul>';
         }
-        const warn = document.createElement('div');
+        // Create DOM element for: warn
+const warn = document.createElement('div');
         if (comp.warns.length>0){
           warn.className='p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-700';
           warn.innerHTML = '<div class="font-semibold mb-1">Warnings</div>' + '<ul class="list-disc ml-5 space-y-1 text-sm">' + comp.warns.map(x=>`<li>${x}</li>`).join('') + '</ul>';
         }
-        const actions = document.createElement('div'); actions.className='flex gap-2';
-        const b1 = document.createElement('button'); b1.className='px-3 py-2 rounded-lg bg-zinc-900 text-white hover:bg-black'; b1.textContent='Copy Link'; b1.addEventListener('click', copyLink);
-        actions.appendChild(b1);
+        // Create DOM element for: actions
+const actions = document.createElement('div'); actions.className='flex gap-2';
+        // Create DOM element for: b1
+const b1 = document.createElement('button'); b1.className='px-3 py-2 rounded-lg bg-zinc-900 text-white hover:bg-black'; b1.textContent='Copy Link'; b1.addEventListener('click', copyLink);
+        // Create DOM element for: b2
+const b2 = document.createElement('button'); b2.className='px-3 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200'; b2.textContent='Import Link'; b2.addEventListener('click', ()=>{
+          const v = prompt('Paste a build link here (supports #b= or ?b=):');
+          if (!v) return;
+          try {
+            const url = new URL(v, location.href);
+            const hash = url.hash;
+            if (hash && hash.startsWith('#b=')) {
+              location.hash = hash;
+            } else {
+              const params = new URLSearchParams(url.search);
+              const b = params.get('b');
+              if (b) location.hash = 'b=' + b; else alert('No build data found in that link.');
+            }
+          } catch(e){
+            // Try raw value as hash or base64
+            if (v.startsWith('#b=')) { location.hash = v; }
+            else if (/^[A-Za-z0-9\-_]+$/.test(v)) { location.hash = 'b=' + v; }
+            else alert('Could not parse that link.');
+          }
+        });
+        actions.appendChild(b1); actions.appendChild(b2);
 
         right.appendChild(meta); right.appendChild(msg); if (comp.warns.length) right.appendChild(warn); right.appendChild(actions);
         grid.appendChild(left); grid.appendChild(right); listSUM.appendChild(grid);
@@ -510,16 +586,19 @@
       document.getElementById('filterCompat').addEventListener('change', render);
 
 
-      function encodeBase64Url(str){
+      // Function: encodeBase64Url - see below for purpose
+function encodeBase64Url(str){
         return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
       }
-      function decodeBase64Url(str){
+      // Function: decodeBase64Url - see below for purpose
+function decodeBase64Url(str){
         str = str.replace(/-/g,'+').replace(/_/g,'/');
         while (str.length % 4) str += '=';
         return decodeURIComponent(escape(atob(str)));
       }
 
-      function buildToIds(b){
+      // Function: buildToIds - see below for purpose
+function buildToIds(b){
         return {
           cpu: b.cpu?.id || null,
           motherboard: b.motherboard?.id || null,
@@ -531,7 +610,8 @@
           storageSATA: (b.storageSATA||[]).map(x=>x.id),
         };
       }
-      function applyIdsToBuild(ids){
+      // Function: applyIdsToBuild - see below for purpose
+function applyIdsToBuild(ids){
         if(!ids || typeof ids !== 'object') return;
         const findById = (arr, id) => arr.find(x=>x.id===id) || null;
         build.cpu = findById(partsDB.cpus, ids.cpu);
@@ -545,16 +625,21 @@
         build.storageSATA = Array.isArray(ids.storageSATA) ? ids.storageSATA.map(id => findById(partsDB.storages, id)).filter(Boolean) : [];
       }
 
-      function copyLink(){
+      // Function: copyLink - see below for purpose
+function copyLink(){
         const ids = buildToIds(build);
         const encoded = encodeBase64Url(JSON.stringify(ids));
         const base = location.href.split('?')[0].split('#')[0];
-        const url = base + '?b=' + encoded;
-        navigator.clipboard.writeText(url).then(()=>{
+        const url = base + '#b=' + encoded;
+        // Update location.hash so address bar always matches current build
+location.hash = 'b=' + encoded;
+        // Copy generated URL to system clipboard
+navigator.clipboard.writeText(url).then(()=>{
           const btn = document.getElementById('btnExport');
           if(btn){ const old = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy Link',1200); }
           // also show a small toast-ish message in the summary if present
-          const toast = document.createElement('div');
+          // Create DOM element for: toast
+const toast = document.createElement('div');
           toast.className = 'mt-3 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2';
           toast.textContent = 'Link copied to clipboard.';
           const sum = document.querySelector('#summary .items');
@@ -562,28 +647,105 @@
         });
       }
 
-      document.getElementById('btnExport').onclick = copyLink;
-      document.getElementById('btnClear').onclick = () => { build.cpu=null; build.motherboard=null; build.ram=null; build.gpu=null; build.storageNVMe=[]; build.storageSATA=[]; build.psu=null; build.case_=null; render(); renderAllMeta(); };
+
+      // Function: getBuildParam - see below for purpose
+function getBuildParam(){
+        const h = location.hash || '';
+        if (h.startsWith('#b=')) return h.slice(3);
+        // also support '#?b=' just in case
+        if (h.startsWith('#?')) {
+          const params = new URLSearchParams(h.slice(2));
+          const v = params.get('b'); if (v) return v;
+        }
+        // support query string as a fallback
+        const params = new URLSearchParams(location.search);
+        return params.get('b');
+      }
+
+      // Function: applyLinkToBuild - see below for purpose
+function applyLinkToBuild(){
+        const b64 = getBuildParam();
+        if (!b64) return false;
+        try{
+          const json = decodeBase64Url(b64);
+          const ids = JSON.parse(json);
+          applyIdsToBuild(ids);
+          const root = document.getElementById('content');
+          if (root) root.innerHTML = '';
+          render();
+          renderAllMeta();
+          return true;
+        } catch(e){
+          console.warn('Failed to load build from link:', e);
+          return false;
+        }
+      }
+      // Expose loader function globally for event listeners
+window.applyLinkToBuild = applyLinkToBuild;
+
+      // Bind event handler for Export/Copy Link button
+document.getElementById('btnExport').onclick = copyLink;
+      // Bind event handler for Copy Specs button
+document.getElementById('btnCopySpecs').onclick = function(){
+        const lines = [];
+        if (build.cpu) lines.push('CPU: ' + build.cpu.brand + ' ' + build.cpu.model);
+        if (build.motherboard) lines.push('Motherboard: ' + build.motherboard.brand + ' ' + build.motherboard.model);
+        if (build.ram) lines.push('RAM: ' + build.ram.brand + ' ' + build.ram.model);
+        if (build.gpu) lines.push('GPU: ' + build.gpu.brand + ' ' + build.gpu.model);
+        if (build.psu) lines.push('PSU: ' + build.psu.brand + ' ' + build.psu.model);
+        if (build.case_) lines.push('Case: ' + build.case_.brand + ' ' + build.case_.model);
+        (build.storageNVMe||[]).forEach((s,i)=>lines.push('NVMe ' + (i+1) + ': ' + s.brand + ' ' + s.model));
+        (build.storageSATA||[]).forEach((s,i)=>lines.push('SATA ' + (i+1) + ': ' + s.brand + ' ' + s.model));
+        const text = lines.join('\n');
+        navigator.clipboard.writeText(text);
+      };
+      // Bind event handler for Clear Build button
+document.getElementById('btnClear').onclick = () => { build.cpu=null; build.motherboard=null; build.ram=null; build.gpu=null; build.storageNVMe=[]; build.storageSATA=[]; build.psu=null; build.case_=null; render(); renderAllMeta(); };
       
 
       // keep closures
       window._redraw = { drawCPU, drawMB, drawRAM, drawGPU, drawStorage, drawPSU, drawCase, drawSummary };
     }
-    function renderAllMeta(){
+    
+      // Function: updateHashFromBuild - see below for purpose
+function updateHashFromBuild(){
+        const ids = buildToIds(build);
+        const encoded = encodeBase64Url(JSON.stringify(ids));
+        const newHash = 'b=' + encoded;
+        if (location.hash !== '#' + newHash){
+          // Use replaceState to avoid polluting back history while you click parts
+          history.replaceState(null, '', location.href.split('#')[0] + '#' + newHash);
+        }
+      }
+
+      // Function: renderAllMeta - see below for purpose
+function renderAllMeta(){
       const { estLoad, recPSU, issues } = checkCompatibility(build);
+      // If no parts are selected, override to 0/0
+      if (!build.cpu && !build.motherboard && !build.ram && !build.gpu && !build.psu && !build.case_ && (!build.storageNVMe || build.storageNVMe.length===0) && (!build.storageSATA || build.storageSATA.length===0)) {
+        document.getElementById('estLoad').textContent = `0 W`;
+        document.getElementById('recPsu').textContent = `0 W`;
+      } else {
+
       document.getElementById('estLoad').textContent = `${estLoad} W`;
       document.getElementById('recPsu').textContent = `${recPSU} W`;
+      }
       const dot = document.getElementById('statusDot'); dot.style.background = (issues.length===0? '#10b981' : '#ef4444');
 
       const box = document.getElementById('issuesBox'); box.innerHTML='';
       const comp = checkCompatibility(build);
       if (comp.issues.length){
-        const d = document.createElement('div'); d.className='p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm';
+        // Create DOM element for: d
+const d = document.createElement('div'); d.className='p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm';
         d.innerHTML = '<div class="font-semibold mb-1">Blocking Issues</div>' + '<ul class="list-disc ml-4 space-y-1">' + comp.issues.map(x=>`<li>${x}</li>`).join('') + '</ul>';
         box.appendChild(d);
+      // Keep the URL hash synced to the current build state
+updateHashFromBuild();
+    
       }
       if (comp.warns.length){
-        const d = document.createElement('div'); d.className='p-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-sm';
+        // Create DOM element for: d
+const d = document.createElement('div'); d.className='p-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-sm';
         d.innerHTML = '<div class="font-semibold mb-1">Warnings</div>' + '<ul class="list-disc ml-4 space-y-1">' + comp.warns.map(x=>`<li>${x}</li>`).join('') + '</ul>';
         box.appendChild(d);
       }
@@ -594,23 +756,11 @@
     render();
     renderAllMeta();
 
-    // If a build is present in the URL (?b=...), apply it
-    try {
-      const params = new URLSearchParams(location.search);
-      const b64 = params.get('b');
-      if (b64) {
-        const json = decodeBase64Url(b64);
-        const ids = JSON.parse(json);
-        applyIdsToBuild(ids);
-        // Force full refresh of panels
-        const root = document.getElementById('content');
-        if (root) root.innerHTML = '';
-        render();
-        renderAllMeta();
-      }
-    } catch (e) {
-      console.warn('Failed to load build from link:', e);
-    }
+    // If a build is present in the URL, apply it (supports #b= and ?b=)
+    window.applyLinkToBuild();
+    // Live-import when the hash changes (so pasting a link works instantly)
+    // When URL hash changes (user pastes link or navigates), re-apply build
+window.addEventListener('hashchange', window.applyLinkToBuild);
   </script>
 </body>
 </html>
