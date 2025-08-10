@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PC Builder – HTML+JS</title>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { color-scheme: light dark; }
+    pre { white-space: pre-wrap; }
+    /* Tooltip styling for hidden JSON specs */
+    .card { position: relative; }
+    .help { position: absolute; right: 10px; bottom: 10px; }
+    .help .dot { width: 22px; height: 22px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+    .tip { position: absolute; right: 0; bottom: 34px; min-width: 240px; max-width: 360px; display: none; z-index: 20; }
+    .help:hover .tip { display: block; }
+    .tip.show { display: block; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 text-zinc-950 dark:text-zinc-50">
+  <header class="sticky top-0 z-50 backdrop-blur bg-white/70 dark:bg-zinc-950/50 border-b border-zinc-200/60 dark:border-zinc-800/60">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+      <div id="statusDot" class="w-2 h-6 rounded-full bg-emerald-500"></div>
+      <h1 class="text-lg font-semibold">PC Builder</h1>
+      <div class="ml-auto flex items-center gap-2">
+        <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+          <div class="text-xs text-zinc-500">Est. Load</div>
+          <div id="estLoad" class="font-semibold">0 W</div>
+        </div>
+        <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+          <div class="text-xs text-zinc-500">Recom. PSU</div>
+          <div id="recPsu" class="font-semibold">0 W</div>
+        </div>
+        <button id="btnExport" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-black">Export JSON</button>
+        <button id="btnPreset" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Preset Demo</button>
+        <button id="btnClear" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Clear</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <aside class="lg:col-span-3">
+      <div class="sticky top-16 space-y-2">
+        <nav id="toc" class="space-y-2"></nav>
+        <div class="mt-4 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+          <div class="text-xs text-zinc-500 mb-2">Filters</div>
+          <label class="flex items-center gap-2 text-sm">
+            <input id="filterCompat" type="checkbox" checked />
+            Show compatible first
+          </label>
+          <div class="text-xs text-zinc-500 mt-2">Search applies to current section</div>
+        </div>
+        <div id="issuesBox" class="mt-4 space-y-2"></div>
+      </div>
+    </aside>
+
+    <section id="content" class="lg:col-span-9 space-y-10"></section>
+  </main>
+
+  <footer class="max-w-7xl mx-auto px-4 pb-10 text-xs text-zinc-500">
+    Compatibility rules are simplified for demo purposes. Extend with chipset/CPU matrices, QVLs, cooler height, 12VHPWR, and lane sharing as needed.
+  </footer>
+
+  <template id="sectionTemplate">
+    <section class="scroll-mt-24">
+      <div class="flex items-end justify-between mb-3">
+        <h2 class="text-xl font-semibold"></h2>
+        <p class="subtitle text-sm text-zinc-500"></p>
+      </div>
+      <div class="bg-white/60 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center gap-3 mb-3">
+          <input class="search w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" placeholder="Search brand/model/specs…" />
+        </div>
+        <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3 items"></div>
+        <div class="mt-3 extras hidden"></div>
+      </div>
+    </section>
+  </template>
+
+  <template id="cardTemplate">
+    <div class="card border rounded-xl p-3 pb-8 flex flex-col gap-2 hover:shadow transition">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <div class="brand text-sm text-zinc-500"></div>
+          <div class="model font-medium"></div>
+        </div>
+        <span class="selected px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700 hidden">Selected</span>
+      </div>
+      <!-- JSON is hidden by default; shown in tooltip -->
+      <div class="warn text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2 hidden"></div>
+      <div class="flex gap-2 mt-1">
+        <button class="btn px-3 py-1.5 rounded-lg text-sm bg-zinc-900 text-white hover:bg-black">Select</button>
+      </div>
+      <!-- Hover / click help tooltip with JSON -->
+      <div class="help">
+        <div class="dot bg-zinc-900 text-white dark:bg-zinc-200 dark:text-zinc-900">?</div>
+        <div class="tip bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 text-xs text-zinc-700 dark:text-zinc-300">
+          <div class="font-semibold mb-1">Specs (JSON)</div>
+          <pre class="spec m-0"></pre>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    // ---------- Data ----------
+    const partsDB = {
+      cpus: [
+        { id: 'cpu-12900k', brand: 'Intel', model: 'Core i9-12900K', socket: 'LGA1700', supportedMemory: ['DDR4','DDR5'], tdp: 241, igpu: true, pcieVersion: 5 },
+        { id: 'cpu-14900kf', brand: 'Intel', model: 'Core i9-14900KF', socket: 'LGA1700', supportedMemory: ['DDR4','DDR5'], tdp: 253, igpu: false, pcieVersion: 5 },
+        { id: 'cpu-7600', brand: 'AMD', model: 'Ryzen 5 7600', socket: 'AM5', supportedMemory: ['DDR5'], tdp: 65, igpu: true, pcieVersion: 5 },
+        { id: 'cpu-5800x3d', brand: 'AMD', model: 'Ryzen 7 5800X3D', socket: 'AM4', supportedMemory: ['DDR4'], tdp: 105, igpu: false, pcieVersion: 4 },
+        { id: 'cpu-i7-4770', brand: 'Intel', model: 'Core i7-4770', socket: 'LGA1150', supportedMemory: ['DDR3'], tdp: 84, igpu: true, pcieVersion: 3 },
+      ],
+      motherboards: [
+        { id: 'mb-z690-ddr5', brand: 'MSI', model: 'PRO Z690-A DDR5', socket: 'LGA1700', memoryType: 'DDR5', dimmSlots: 4, maxMemoryGB: 128, formFactor: 'ATX', m2Slots: 4, sataPorts: 6, pcieX16Slots: 2, pcieVersion: 5, chipset: 'Z690' },
+        { id: 'mb-b660-ddr4', brand: 'ASUS', model: 'TUF B660-PLUS WIFI D4', socket: 'LGA1700', memoryType: 'DDR4', dimmSlots: 4, maxMemoryGB: 128, formFactor: 'ATX', m2Slots: 2, sataPorts: 4, pcieX16Slots: 1, pcieVersion: 4, chipset: 'B660' },
+        { id: 'mb-b650m-ddr5', brand: 'Gigabyte', model: 'B650M AORUS ELITE', socket: 'AM5', memoryType: 'DDR5', dimmSlots: 4, maxMemoryGB: 192, formFactor: 'mATX', m2Slots: 3, sataPorts: 4, pcieX16Slots: 1, pcieVersion: 4, chipset: 'B650' },
+        { id: 'mb-b550m-ddr4', brand: 'Gigabyte', model: 'B550M AORUS ELITE', socket: 'AM4', memoryType: 'DDR4', dimmSlots: 4, maxMemoryGB: 128, formFactor: 'mATX', m2Slots: 2, sataPorts: 4, pcieX16Slots: 1, pcieVersion: 4, chipset: 'B550' },
+        { id: 'mb-z97-ddr3', brand: 'ASUS', model: 'Z97-A', socket: 'LGA1150', memoryType: 'DDR3', dimmSlots: 4, maxMemoryGB: 32, formFactor: 'ATX', m2Slots: 1, sataPorts: 6, pcieX16Slots: 2, pcieVersion: 3, chipset: 'Z97' },
+      ],
+      rams: [
+        { id: 'ram-ddr5-32-6000', brand: 'G.Skill', model: 'Ripjaws S5 32GB (2x16) 6000', type: 'DDR5', modules: 2, sizeGB: 32, speedMT: 6000 },
+        { id: 'ram-ddr5-64-6000', brand: 'Patriot', model: 'Viper Venom 64GB (2x32) 6000 CL30', type: 'DDR5', modules: 2, sizeGB: 64, speedMT: 6000 },
+        { id: 'ram-ddr4-32-3600', brand: 'Corsair', model: 'Vengeance 32GB (2x16) 3600', type: 'DDR4', modules: 2, sizeGB: 32, speedMT: 3600 },
+        { id: 'ram-ddr4-64-3200', brand: 'Kingston', model: 'Fury 64GB (2x32) 3200', type: 'DDR4', modules: 2, sizeGB: 64, speedMT: 3200 },
+        { id: 'ram-ddr3-16-1600', brand: 'Crucial', model: 'Ballistix 16GB (2x8) 1600', type: 'DDR3', modules: 2, sizeGB: 16, speedMT: 1600 },
+      ],
+      gpus: [
+        { id: 'gpu-4070super', brand: 'NVIDIA', model: 'RTX 4070 SUPER', tdp: 220, lengthMM: 260, slotWidth: 2, pciePower8Pin: 2 },
+        { id: 'gpu-5070ti', brand: 'NVIDIA', model: 'RTX 5070 Ti', tdp: 285, lengthMM: 300, slotWidth: 2.5, pciePower8Pin: 3 },
+        { id: 'gpu-7900xt', brand: 'AMD', model: 'Radeon RX 7900 XT', tdp: 315, lengthMM: 345, slotWidth: 2.5, pciePower8Pin: 3 },
+        { id: 'gpu-rx6600', brand: 'AMD', model: 'Radeon RX 6600', tdp: 132, lengthMM: 200, slotWidth: 2, pciePower8Pin: 1 },
+      ],
+      storages: [
+        { id: 'nvme-2tb-gen4', brand: 'Crucial', model: 'P3 Plus 2TB NVMe', type: 'NVMe', sizeGB: 2000, nvmeGen: 4 },
+        { id: 'nvme-1tb-gen4', brand: 'Corsair', model: 'MP600 1TB NVMe', type: 'NVMe', sizeGB: 1000, nvmeGen: 4 },
+        { id: 'sata-ssd-1tb', brand: 'Samsung', model: '870 EVO 1TB', type: 'SATA', sizeGB: 1000 },
+        { id: 'hdd-2tb', brand: 'Seagate', model: 'Barracuda 2TB', type: 'SATA', sizeGB: 2000 },
+      ],
+      psus: [
+        { id: 'psu-750', brand: 'Corsair', model: 'RM750e (80+ Gold)', wattage: 750, lengthMM: 160, pcie8pin: 3 },
+        { id: 'psu-850', brand: 'SilverStone', model: 'DA850 (80+ Gold)', wattage: 850, lengthMM: 140, pcie8pin: 4 },
+        { id: 'psu-1000', brand: 'Seasonic', model: 'Focus 1000 (80+ Gold)', wattage: 1000, lengthMM: 150, pcie8pin: 5 },
+        { id: 'psu-550', brand: 'EVGA', model: '550 B5 (80+ Bronze)', wattage: 550, lengthMM: 150, pcie8pin: 2 },
+      ],
+      cases: [
+        { id: 'case-a3', brand: 'Lian Li', model: 'DAN A3 Mesh', supportedFormFactors: ['mATX','ITX'], gpuMaxLengthMM: 380, psuMaxLengthMM: 160, coolerClearanceMM: 158 },
+        { id: 'case-4000d', brand: 'Corsair', model: '4000D Airflow', supportedFormFactors: ['ATX','mATX','ITX'], gpuMaxLengthMM: 360, psuMaxLengthMM: 180, coolerClearanceMM: 170 },
+        { id: 'case-nr200p', brand: 'Cooler Master', model: 'NR200P', supportedFormFactors: ['ITX'], gpuMaxLengthMM: 330, psuMaxLengthMM: 180, coolerClearanceMM: 155 },
+      ],
+    };
+
+    // ---------- State ----------
+    const build = {
+      cpu: null, motherboard: null, ram: null, gpu: null,
+      storageNVMe: [], storageSATA: [], psu: null, case_: null,
+    };
+
+    const steps = [
+      { id: 'cpu', label: 'CPU', subtitle: 'Choose your processor (socket & memory support drive compatibility)' },
+      { id: 'motherboard', label: 'Motherboard', subtitle: 'Must match CPU socket and memory type; affects form factor and storage slots' },
+      { id: 'ram', label: 'Memory (RAM)', subtitle: 'Must match motherboard memory type and slot count' },
+      { id: 'gpu', label: 'Graphics Card', subtitle: 'Consider length, power connectors, and PSU capacity' },
+      { id: 'storage', label: 'Storage', subtitle: 'Track M.2 (NVMe) and SATA port limits' },
+      { id: 'psu', label: 'Power Supply', subtitle: 'Ensure wattage & PCIe connectors meet demand with headroom' },
+      { id: 'case', label: 'Case', subtitle: 'Must fit form factor, GPU length, PSU length' },
+      { id: 'summary', label: 'Summary', subtitle: 'Review compatibility & export your parts list' },
+    ];
+
+    // ---------- Utils ----------
+    const pretty = (x) => JSON.stringify(x, null, 2);
+
+    function estimateWattage(b) {
+      const baseBoard = 50;
+      const ram = b.ram ? Math.max(8, Math.ceil(b.ram.sizeGB / 16) * 6) : 0;
+      const nvme = (b.storageNVMe || []).length * 5;
+      const sata = (b.storageSATA || []).length * 5;
+      const cpuTdp = b.cpu ? b.cpu.tdp : 0;
+      const gpuTdp = b.gpu ? b.gpu.tdp : 0;
+      const total = baseBoard + ram + nvme + sata + cpuTdp + gpuTdp;
+      const recPSU = Math.ceil(total * 1.5 / 50) * 50;
+      return { estLoad: total, recPSU };
+    }
+
+    function checkCompatibility(b) {
+      const issues = [];
+      const warns = [];
+      const { cpu, motherboard, ram, gpu, psu, case_: pcCase } = b;
+      const storageNVMe = b.storageNVMe || [];
+      const storageSATA = b.storageSATA || [];
+
+      if (cpu && motherboard) {
+        if (cpu.socket !== motherboard.socket) issues.push(`CPU socket (${cpu.socket}) does not match motherboard socket (${motherboard.socket}).`);
+        if (!cpu.supportedMemory.includes(motherboard.memoryType)) issues.push(`CPU supports ${cpu.supportedMemory.join('/')}, but motherboard is ${motherboard.memoryType}.`);
+        if (motherboard.pcieVersion < (cpu.pcieVersion || 3)) warns.push(`Motherboard PCIe ${motherboard.pcieVersion} may limit some CPU/PCIe features (CPU up to ${cpu.pcieVersion}).`);
+      }
+      if (ram && motherboard) {
+        if (ram.type !== motherboard.memoryType) issues.push(`RAM is ${ram.type}, but motherboard requires ${motherboard.memoryType}.`);
+        if (ram.modules > motherboard.dimmSlots) issues.push(`RAM kit has ${ram.modules} modules, but motherboard has only ${motherboard.dimmSlots} DIMM slots.`);
+        if (ram.sizeGB > motherboard.maxMemoryGB) issues.push(`RAM capacity ${ram.sizeGB}GB exceeds motherboard maximum ${motherboard.maxMemoryGB}GB.`);
+        if (cpu && !cpu.supportedMemory.includes(ram.type)) issues.push(`CPU supports ${cpu.supportedMemory.join('/')}, RAM is ${ram.type}.`);
+      }
+      if (motherboard) {
+        if (storageNVMe.length > motherboard.m2Slots) issues.push(`Selected ${storageNVMe.length} NVMe drive(s), but motherboard has only ${motherboard.m2Slots} M.2 slot(s).`);
+        const sataUsed = storageSATA.filter((s) => s.type === 'SATA').length;
+        if (sataUsed > motherboard.sataPorts) issues.push(`Selected ${sataUsed} SATA drive(s), but motherboard has only ${motherboard.sataPorts} SATA port(s).`);
+      }
+      const { estLoad, recPSU } = estimateWattage(b);
+      if (psu) {
+        if (psu.wattage < estLoad) issues.push(`PSU wattage ${psu.wattage}W is below estimated system load ${estLoad}W.`);
+        else if (psu.wattage < recPSU) warns.push(`PSU wattage ${psu.wattage}W < recommended ${recPSU}W.`);
+        if (gpu && psu.pcie8pin < (gpu.pciePower8Pin || 0)) issues.push(`PSU has ${psu.pcie8pin} PCIe 8‑pin, but GPU needs ${gpu.pciePower8Pin}.`);
+      }
+      if (pcCase) {
+        if (motherboard && !pcCase.supportedFormFactors.includes(motherboard.formFactor)) issues.push(`Case supports ${pcCase.supportedFormFactors.join(', ')}, but motherboard is ${motherboard.formFactor}.`);
+        if (gpu && gpu.lengthMM > pcCase.gpuMaxLengthMM) issues.push(`GPU length ${gpu.lengthMM}mm exceeds case limit ${pcCase.gpuMaxLengthMM}mm.`);
+        if (psu && psu.lengthMM > pcCase.psuMaxLengthMM) warns.push(`PSU length ${psu.lengthMM}mm is close to/over case limit ${pcCase.psuMaxLengthMM}mm.`);
+      }
+      return { issues, warns, ...estimateWattage(b) };
+    }
+
+    function compatReason(kind, part) {
+      const { cpu, motherboard, ram, gpu, psu, case_: pcCase, storageNVMe, storageSATA } = build;
+      switch (kind) {
+        case 'cpu':
+          if (motherboard && part.socket !== motherboard.socket) return `Socket ${part.socket} ≠ ${motherboard.socket}`;
+          if (motherboard && !part.supportedMemory.includes(motherboard.memoryType)) return `CPU supports ${part.supportedMemory.join('/')}, board is ${motherboard.memoryType}`;
+          return null;
+        case 'motherboard':
+          if (cpu && part.socket !== cpu.socket) return `Socket ${part.socket} ≠ ${cpu.socket}`;
+          if (cpu && !cpu.supportedMemory.includes(part.memoryType)) return `Board is ${part.memoryType}, CPU supports ${cpu.supportedMemory.join('/')}`;
+          if (pcCase && !pcCase.supportedFormFactors.includes(part.formFactor)) return `Form factor ${part.formFactor} not in ${pcCase.supportedFormFactors.join('/')}`;
+          return null;
+        case 'ram':
+          if (motherboard && part.type !== motherboard.memoryType) return `RAM ${part.type} ≠ board ${motherboard.memoryType}`;
+          if (motherboard && part.modules > motherboard.dimmSlots) return `${part.modules} modules > ${motherboard.dimmSlots} slots`;
+          if (motherboard && part.sizeGB > motherboard.maxMemoryGB) return `${part.sizeGB}GB > ${motherboard.maxMemoryGB}GB max`;
+          if (cpu && !cpu.supportedMemory.includes(part.type)) return `CPU supports ${cpu.supportedMemory.join('/')}, RAM is ${part.type}`;
+          return null;
+        case 'gpu':
+          if (pcCase && part.lengthMM > pcCase.gpuMaxLengthMM) return `GPU ${part.lengthMM}mm > case ${pcCase.gpuMaxLengthMM}mm`;
+          if (psu && psu.pcie8pin < (part.pciePower8Pin || 0)) return `PSU PCIe 8‑pin ${psu.pcie8pin} < GPU needs ${part.pciePower8Pin}`;
+          return null;
+        case 'psu': {
+          const tmp = estimateWattage({ ...build, psu: part });
+          if (part.wattage < tmp.estLoad) return `${part.wattage}W < est ${tmp.estLoad}W`;
+          return null;
+        }
+        case 'case':
+          if (motherboard && !part.supportedFormFactors.includes(motherboard.formFactor)) return `Case supports ${part.supportedFormFactors.join(', ')}, board is ${motherboard.formFactor}`;
+          if (gpu && gpu.lengthMM > part.gpuMaxLengthMM) return `GPU ${gpu.lengthMM}mm > case ${part.gpuMaxLengthMM}mm`;
+          if (psu && psu.lengthMM > part.psuMaxLengthMM) return `PSU ${psu.lengthMM}mm > case ${part.psuMaxLengthMM}mm`;
+          return null;
+        case 'nvme':
+          if (motherboard && (storageNVMe.length + 1) > motherboard.m2Slots) return `Adding exceeds M.2 slots (${motherboard.m2Slots})`;
+          return null;
+        case 'sata':
+          const used = (storageSATA.length + 1);
+          if (motherboard && used > motherboard.sataPorts) return `Adding exceeds SATA ports (${motherboard.sataPorts})`;
+          return null;
+      }
+    }
+
+    // ---------- Rendering ----------
+    const content = document.getElementById('content');
+    const sectionTpl = document.getElementById('sectionTemplate');
+    const cardTpl = document.getElementById('cardTemplate');
+
+    function createSection({ id, label, subtitle }) {
+      const node = sectionTpl.content.cloneNode(true);
+      const section = node.querySelector('section');
+      section.id = id;
+      section.querySelector('h2').textContent = label;
+      section.querySelector('.subtitle').textContent = subtitle || '';
+      return section;
+    }
+
+    function renderTOC() {
+      const toc = document.getElementById('toc');
+      toc.innerHTML = '';
+      steps.forEach(s => {
+        const a = document.createElement('a');
+        a.href = `#${s.id}`;
+        a.className = 'block';
+        a.innerHTML = `<div class=\"flex items-center gap-3 px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900\"><div class=\"w-2 h-2 rounded-full bg-zinc-300\"></div><span class=\"text-sm font-medium\">${s.label}</span></div>`;
+        toc.appendChild(a);
+      });
+    }
+
+    function partSummary(part) {
+      const o = { ...part }; delete o.id; return pretty(o);
+    }
+
+    function makeCard(kind, part, selected, reason, onClick) {
+      const node = cardTpl.content.cloneNode(true);
+      const card = node.children[0];
+      const warn = card.querySelector('.warn');
+      card.querySelector('.brand').textContent = part.brand;
+      card.querySelector('.model').textContent = part.model;
+      card.querySelector('.spec').textContent = partSummary(part);
+      const btn = card.querySelector('.btn');
+      const sel = card.querySelector('.selected');
+      if (selected) {
+        card.classList.add('border-emerald-500','ring-1','ring-emerald-500');
+        btn.textContent = 'Remove';
+        btn.className = 'btn px-3 py-1.5 rounded-lg text-sm bg-rose-600 text-white hover:bg-rose-700';
+        sel.classList.remove('hidden');
+      } else {
+        card.classList.add('border-zinc-200','dark:border-zinc-800');
+      }
+      if (reason) {
+        card.style.opacity = 0.65;
+        warn.textContent = reason;
+        warn.classList.remove('hidden');
+      }
+      btn.addEventListener('click', onClick);
+
+      // Touch/click toggle for tooltip (useful on mobile)
+      const help = card.querySelector('.help');
+      const tip = card.querySelector('.tip');
+      help.addEventListener('click', (e) => {
+        e.stopPropagation();
+        tip.classList.toggle('show');
+      });
+      document.addEventListener('click', () => tip.classList.remove('show'));
+
+      return card;
+    }
+
+    function sortByCompat(kind, arr, compatFirst, q, reasonFn) {
+      const filtered = arr.filter(p => !q || JSON.stringify(p).toLowerCase().includes(q.toLowerCase()));
+      if (!compatFirst) return filtered;
+      const scored = filtered.map(p => ({ p, bad: !!reasonFn(p) }));
+      scored.sort((a,b) => Number(a.bad) - Number(b.bad));
+      return scored.map(x => x.p);
+    }
+
+    function render() {
+      renderTOC();
+      content.innerHTML = '';
+      const filterCompat = document.getElementById('filterCompat').checked;
+
+      // Sections
+      // CPU
+      const secCPU = createSection(steps[0]);
+      const searchCPU = secCPU.querySelector('.search');
+      const listCPU = secCPU.querySelector('.items');
+      function drawCPU() {
+        listCPU.innerHTML = '';
+        const arr = sortByCompat('cpu', partsDB.cpus, filterCompat, searchCPU.value, p => compatReason('cpu', p));
+        arr.forEach(p => listCPU.appendChild(makeCard('cpu', p, build.cpu?.id===p.id, compatReason('cpu', p), () => { build.cpu = (build.cpu?.id===p.id)? null : p; renderAllMeta(); drawCPU(); drawMB(); drawRAM(); drawPSU(); drawCase(); } )));
+      }
+      searchCPU.addEventListener('input', drawCPU);
+      drawCPU();
+      content.appendChild(secCPU);
+
+      // Motherboard
+      const secMB = createSection(steps[1]);
+      const searchMB = secMB.querySelector('.search');
+      const listMB = secMB.querySelector('.items');
+      function drawMB() {
+        listMB.innerHTML = '';
+        const arr = sortByCompat('motherboard', partsDB.motherboards, filterCompat, searchMB.value, p => compatReason('motherboard', p));
+        arr.forEach(p => listMB.appendChild(makeCard('motherboard', p, build.motherboard?.id===p.id, compatReason('motherboard', p), () => { build.motherboard = (build.motherboard?.id===p.id)? null : p; renderAllMeta(); drawCPU(); drawMB(); drawRAM(); drawStorage(); drawCase(); } )));
+      }
+      searchMB.addEventListener('input', drawMB);
+      drawMB();
+      content.appendChild(secMB);
+
+      // RAM
+      const secRAM = createSection(steps[2]);
+      const searchRAM = secRAM.querySelector('.search');
+      const listRAM = secRAM.querySelector('.items');
+      function drawRAM() {
+        listRAM.innerHTML = '';
+        const arr = sortByCompat('ram', partsDB.rams, filterCompat, searchRAM.value, p => compatReason('ram', p));
+        arr.forEach(p => listRAM.appendChild(makeCard('ram', p, build.ram?.id===p.id, compatReason('ram', p), () => { build.ram = (build.ram?.id===p.id)? null : p; renderAllMeta(); drawRAM(); drawPSU(); } )));
+      }
+      searchRAM.addEventListener('input', drawRAM);
+      drawRAM();
+      content.appendChild(secRAM);
+
+      // GPU
+      const secGPU = createSection(steps[3]);
+      const searchGPU = secGPU.querySelector('.search');
+      const listGPU = secGPU.querySelector('.items');
+      function drawGPU() {
+        listGPU.innerHTML = '';
+        const arr = sortByCompat('gpu', partsDB.gpus, filterCompat, searchGPU.value, p => compatReason('gpu', p));
+        arr.forEach(p => listGPU.appendChild(makeCard('gpu', p, build.gpu?.id===p.id, compatReason('gpu', p), () => { build.gpu = (build.gpu?.id===p.id)? null : p; renderAllMeta(); drawGPU(); drawPSU(); drawCase(); } )));
+      }
+      searchGPU.addEventListener('input', drawGPU);
+      drawGPU();
+      content.appendChild(secGPU);
+
+      // Storage (NVMe + SATA)
+      const secSTO = createSection(steps[4]);
+      const searchSTO = secSTO.querySelector('.search');
+      const listSTO = secSTO.querySelector('.items');
+      const extrasSTO = secSTO.querySelector('.extras');
+      extrasSTO.classList.remove('hidden');
+      function drawStorage() {
+        listSTO.innerHTML=''; extrasSTO.innerHTML='';
+        const nvmeArr = sortByCompat('nvme', partsDB.storages.filter(s=>s.type==='NVMe'), filterCompat, searchSTO.value, p=>compatReason('nvme', p));
+        const sataArr = sortByCompat('sata', partsDB.storages.filter(s=>s.type==='SATA'), filterCompat, searchSTO.value, p=>compatReason('sata', p));
+        const nvmeHeader = document.createElement('h3'); nvmeHeader.className='font-medium mb-2'; nvmeHeader.textContent='NVMe (M.2)'; listSTO.appendChild(nvmeHeader);
+        nvmeArr.forEach(p => listSTO.appendChild(makeCard('nvme', p, false, compatReason('nvme', p), () => { build.storageNVMe.push(p); renderAllMeta(); drawStorage(); } )));
+        const sataHeader = document.createElement('h3'); sataHeader.className='font-medium my-2'; sataHeader.textContent='SATA (SSD/HDD)'; listSTO.appendChild(sataHeader);
+        sataArr.forEach(p => listSTO.appendChild(makeCard('sata', p, false, compatReason('sata', p), () => { build.storageSATA.push(p); renderAllMeta(); drawStorage(); } )));
+        const tagWrap = document.createElement('div');
+        tagWrap.innerHTML = `<div class="text-sm font-medium mb-1">Your Drives</div>`;
+        const tags = document.createElement('div'); tags.className='flex flex-wrap gap-2';
+        [...build.storageNVMe.map((d,i)=>({d,i,type:'nvme'})), ...build.storageSATA.map((d,i)=>({d,i,type:'sata'}))].forEach(({d,i,type})=>{
+          const span = document.createElement('span');
+          span.className='inline-flex items-center gap-2 px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-sm';
+          span.textContent=`${d.brand} ${d.model}`;
+          const x = document.createElement('button'); x.className='text-rose-600'; x.textContent='✕';
+          x.addEventListener('click', ()=>{ if(type==='nvme') build.storageNVMe.splice(i,1); else build.storageSATA.splice(i,1); renderAllMeta(); drawStorage(); });
+          span.appendChild(x); tags.appendChild(span);
+        });
+        extrasSTO.appendChild(tagWrap); extrasSTO.appendChild(tags);
+      }
+      searchSTO.addEventListener('input', drawStorage);
+      drawStorage();
+      content.appendChild(secSTO);
+
+      // PSU
+      const secPSU = createSection(steps[5]);
+      const searchPSU = secPSU.querySelector('.search');
+      const listPSU = secPSU.querySelector('.items');
+      function drawPSU() {
+        listPSU.innerHTML = '';
+        const arr = sortByCompat('psu', partsDB.psus, filterCompat, searchPSU.value, p=>compatReason('psu', p));
+        arr.forEach(p => listPSU.appendChild(makeCard('psu', p, build.psu?.id===p.id, compatReason('psu', p), () => { build.psu = (build.psu?.id===p.id)? null : p; renderAllMeta(); drawPSU(); } )));
+      }
+      searchPSU.addEventListener('input', drawPSU);
+      drawPSU();
+      content.appendChild(secPSU);
+
+      // Case
+      const secCASE = createSection(steps[6]);
+      const searchCASE = secCASE.querySelector('.search');
+      const listCASE = secCASE.querySelector('.items');
+      function drawCase() {
+        listCASE.innerHTML='';
+        const arr = sortByCompat('case', partsDB.cases, filterCompat, searchCASE.value, p=>compatReason('case', p));
+        arr.forEach(p => listCASE.appendChild(makeCard('case', p, build.case_?.id===p.id, compatReason('case', p), () => { build.case_ = (build.case_?.id===p.id)? null : p; renderAllMeta(); drawCase(); } )));
+      }
+      searchCASE.addEventListener('input', drawCase);
+      drawCase();
+      content.appendChild(secCASE);
+
+      // Summary
+      const secSUM = createSection(steps[7]);
+      secSUM.querySelector('.search').classList.add('hidden');
+      const listSUM = secSUM.querySelector('.items');
+      listSUM.classList.remove('grid');
+      function drawSummary(){
+        listSUM.innerHTML='';
+        const grid = document.createElement('div'); grid.className='grid md:grid-cols-2 gap-6 w-full';
+        const left = document.createElement('div'); left.className='space-y-3';
+        const right = document.createElement('div'); right.className='space-y-3';
+        function row(label, val){
+          const el = document.createElement('div'); el.className='flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 py-2';
+          const l = document.createElement('div'); l.className='text-sm text-zinc-500'; l.textContent=label;
+          const r = document.createElement('div'); r.className='text-sm font-medium'; r.textContent = val || '—';
+          el.appendChild(l); el.appendChild(r); left.appendChild(el);
+        }
+        row('CPU', build.cpu && `${build.cpu.brand} ${build.cpu.model}`);
+        row('Motherboard', build.motherboard && `${build.motherboard.brand} ${build.motherboard.model}`);
+        row('RAM', build.ram && `${build.ram.brand} ${build.ram.model} (${build.ram.sizeGB}GB)`);
+        row('GPU', build.gpu && `${build.gpu.brand} ${build.gpu.model}`);
+        row('NVMe', build.storageNVMe.map(d=>`${d.brand} ${d.model}`).join('; '));
+        row('SATA', build.storageSATA.map(d=>`${d.brand} ${d.model}`).join('; '));
+        row('PSU', build.psu && `${build.psu.brand} ${build.psu.model} (${build.psu.wattage}W)`);
+        row('Case', build.case_ && `${build.case_.brand} ${build.case_.model}`);
+
+        const meta = document.createElement('div'); meta.className='grid grid-cols-2 gap-3';
+        meta.innerHTML = `
+          <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"><div class="text-xs text-zinc-500">Estimated Load</div><div class="font-semibold">${estimateWattage(build).estLoad} W</div></div>
+          <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"><div class="text-xs text-zinc-500">Recommended PSU</div><div class="font-semibold">${estimateWattage(build).recPSU} W</div></div>`;
+
+        const comp = checkCompatibility(build);
+        const msg = document.createElement('div');
+        if (comp.issues.length===0){
+          msg.className='p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700';
+          msg.textContent='✅ No blocking compatibility issues detected.';
+        } else {
+          msg.className='p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-700';
+          msg.innerHTML = '<div class="font-semibold mb-1">Blocking Issues</div>' + '<ul class="list-disc ml-5 space-y-1 text-sm">' + comp.issues.map(x=>`<li>${x}</li>`).join('') + '</ul>';
+        }
+        const warn = document.createElement('div');
+        if (comp.warns.length>0){
+          warn.className='p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-700';
+          warn.innerHTML = '<div class="font-semibold mb-1">Warnings</div>' + '<ul class="list-disc ml-5 space-y-1 text-sm">' + comp.warns.map(x=>`<li>${x}</li>`).join('') + '</ul>';
+        }
+        const actions = document.createElement('div'); actions.className='flex gap-2';
+        const b1 = document.createElement('button'); b1.className='px-3 py-2 rounded-lg bg-zinc-900 text-white hover:bg-black'; b1.textContent='Export JSON'; b1.addEventListener('click', exportBuild);
+        const b2 = document.createElement('button'); b2.className='px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700'; b2.textContent='Load Demo Build'; b2.addEventListener('click', presetDemo);
+        actions.appendChild(b1); actions.appendChild(b2);
+
+        right.appendChild(meta); right.appendChild(msg); if (comp.warns.length) right.appendChild(warn); right.appendChild(actions);
+        grid.appendChild(left); grid.appendChild(right); listSUM.appendChild(grid);
+      }
+      drawSummary();
+      content.appendChild(secSUM);
+
+      // global listeners
+      document.getElementById('filterCompat').addEventListener('change', render);
+
+      function exportBuild(){
+        const blob = new Blob([pretty(build)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'pc-build.json'; a.click(); URL.revokeObjectURL(url);
+      }
+      document.getElementById('btnExport').onclick = exportBuild;
+      document.getElementById('btnClear').onclick = () => { build.cpu=null; build.motherboard=null; build.ram=null; build.gpu=null; build.storageNVMe=[]; build.storageSATA=[]; build.psu=null; build.case_=null; render(); renderAllMeta(); };
+      document.getElementById('btnPreset').onclick = presetDemo;
+
+      // keep closures
+      window._redraw = { drawCPU, drawMB, drawRAM, drawGPU, drawStorage, drawPSU, drawCase, drawSummary };
+    }
+
+    function presetDemo(){
+      build.cpu = partsDB.cpus.find(x=>x.id==='cpu-14900kf');
+      build.motherboard = partsDB.motherboards.find(x=>x.id==='mb-z690-ddr5');
+      build.ram = partsDB.rams.find(x=>x.id==='ram-ddr5-64-6000');
+      build.gpu = partsDB.gpus.find(x=>x.id==='gpu-5070ti');
+      build.psu = partsDB.psus.find(x=>x.id==='psu-1000');
+      build.case_ = partsDB.cases.find(x=>x.id==='case-4000d');
+      build.storageNVMe = [partsDB.storages.find(x=>x.id==='nvme-2tb-gen4')];
+      build.storageSATA = [partsDB.storages.find(x=>x.id==='sata-ssd-1tb')];
+      render(); renderAllMeta();
+    }
+
+    function renderAllMeta(){
+      const { estLoad, recPSU, issues } = checkCompatibility(build);
+      document.getElementById('estLoad').textContent = `${estLoad} W`;
+      document.getElementById('recPsu').textContent = `${recPSU} W`;
+      const dot = document.getElementById('statusDot'); dot.style.background = (issues.length===0? '#10b981' : '#ef4444');
+
+      const box = document.getElementById('issuesBox'); box.innerHTML='';
+      const comp = checkCompatibility(build);
+      if (comp.issues.length){
+        const d = document.createElement('div'); d.className='p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm';
+        d.innerHTML = '<div class="font-semibold mb-1">Blocking Issues</div>' + '<ul class="list-disc ml-4 space-y-1">' + comp.issues.map(x=>`<li>${x}</li>`).join('') + '</ul>';
+        box.appendChild(d);
+      }
+      if (comp.warns.length){
+        const d = document.createElement('div'); d.className='p-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-sm';
+        d.innerHTML = '<div class="font-semibold mb-1">Warnings</div>' + '<ul class="list-disc ml-4 space-y-1">' + comp.warns.map(x=>`<li>${x}</li>`).join('') + '</ul>';
+        box.appendChild(d);
+      }
+      if (window._redraw) { Object.values(window._redraw).forEach(fn=>{}); }
+    }
+
+    // init
+    render();
+    renderAllMeta();
+  </script>
+</body>
+</html>
