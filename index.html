@@ -32,8 +32,8 @@
           <div class="text-xs text-zinc-500">Recom. PSU</div>
           <div id="recPsu" class="font-semibold">0 W</div>
         </div>
-        <button id="btnExport" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-black">Export JSON</button>
-        <button id="btnPreset" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Preset Demo</button>
+        <button id="btnExport" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-black">Copy Link</button>
+        
         <button id="btnClear" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Clear</button>
       </div>
     </div>
@@ -497,9 +497,8 @@
           warn.innerHTML = '<div class="font-semibold mb-1">Warnings</div>' + '<ul class="list-disc ml-5 space-y-1 text-sm">' + comp.warns.map(x=>`<li>${x}</li>`).join('') + '</ul>';
         }
         const actions = document.createElement('div'); actions.className='flex gap-2';
-        const b1 = document.createElement('button'); b1.className='px-3 py-2 rounded-lg bg-zinc-900 text-white hover:bg-black'; b1.textContent='Export JSON'; b1.addEventListener('click', exportBuild);
-        const b2 = document.createElement('button'); b2.className='px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700'; b2.textContent='Load Demo Build'; b2.addEventListener('click', presetDemo);
-        actions.appendChild(b1); actions.appendChild(b2);
+        const b1 = document.createElement('button'); b1.className='px-3 py-2 rounded-lg bg-zinc-900 text-white hover:bg-black'; b1.textContent='Copy Link'; b1.addEventListener('click', copyLink);
+        actions.appendChild(b1);
 
         right.appendChild(meta); right.appendChild(msg); if (comp.warns.length) right.appendChild(warn); right.appendChild(actions);
         grid.appendChild(left); grid.appendChild(right); listSUM.appendChild(grid);
@@ -510,31 +509,66 @@
       // global listeners
       document.getElementById('filterCompat').addEventListener('change', render);
 
-      function exportBuild(){
-        const blob = new Blob([pretty(build)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'pc-build.json'; a.click(); URL.revokeObjectURL(url);
+
+      function encodeBase64Url(str){
+        return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
       }
-      document.getElementById('btnExport').onclick = exportBuild;
+      function decodeBase64Url(str){
+        str = str.replace(/-/g,'+').replace(/_/g,'/');
+        while (str.length % 4) str += '=';
+        return decodeURIComponent(escape(atob(str)));
+      }
+
+      function buildToIds(b){
+        return {
+          cpu: b.cpu?.id || null,
+          motherboard: b.motherboard?.id || null,
+          ram: b.ram?.id || null,
+          gpu: b.gpu?.id || null,
+          psu: b.psu?.id || null,
+          case_: b.case_?.id || null,
+          storageNVMe: (b.storageNVMe||[]).map(x=>x.id),
+          storageSATA: (b.storageSATA||[]).map(x=>x.id),
+        };
+      }
+      function applyIdsToBuild(ids){
+        if(!ids || typeof ids !== 'object') return;
+        const findById = (arr, id) => arr.find(x=>x.id===id) || null;
+        build.cpu = findById(partsDB.cpus, ids.cpu);
+        build.motherboard = findById(partsDB.motherboards, ids.motherboard);
+        build.ram = findById(partsDB.rams, ids.ram);
+        build.gpu = findById(partsDB.gpus, ids.gpu);
+        build.psu = findById(partsDB.psus, ids.psu);
+        build.case_ = findById(partsDB.cases, ids.case_);
+
+        build.storageNVMe = Array.isArray(ids.storageNVMe) ? ids.storageNVMe.map(id => findById(partsDB.storages, id)).filter(Boolean) : [];
+        build.storageSATA = Array.isArray(ids.storageSATA) ? ids.storageSATA.map(id => findById(partsDB.storages, id)).filter(Boolean) : [];
+      }
+
+      function copyLink(){
+        const ids = buildToIds(build);
+        const encoded = encodeBase64Url(JSON.stringify(ids));
+        const base = location.href.split('?')[0].split('#')[0];
+        const url = base + '?b=' + encoded;
+        navigator.clipboard.writeText(url).then(()=>{
+          const btn = document.getElementById('btnExport');
+          if(btn){ const old = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy Link',1200); }
+          // also show a small toast-ish message in the summary if present
+          const toast = document.createElement('div');
+          toast.className = 'mt-3 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2';
+          toast.textContent = 'Link copied to clipboard.';
+          const sum = document.querySelector('#summary .items');
+          if(sum){ sum.appendChild(toast); setTimeout(()=>toast.remove(), 1500); }
+        });
+      }
+
+      document.getElementById('btnExport').onclick = copyLink;
       document.getElementById('btnClear').onclick = () => { build.cpu=null; build.motherboard=null; build.ram=null; build.gpu=null; build.storageNVMe=[]; build.storageSATA=[]; build.psu=null; build.case_=null; render(); renderAllMeta(); };
-      document.getElementById('btnPreset').onclick = presetDemo;
+      
 
       // keep closures
       window._redraw = { drawCPU, drawMB, drawRAM, drawGPU, drawStorage, drawPSU, drawCase, drawSummary };
     }
-
-    function presetDemo(){
-      build.cpu = partsDB.cpus.find(x=>x.id==='cpu-14900kf');
-      build.motherboard = partsDB.motherboards.find(x=>x.id==='mb-z690-ddr5');
-      build.ram = partsDB.rams.find(x=>x.id==='ram-ddr5-64-6000');
-      build.gpu = partsDB.gpus.find(x=>x.id==='gpu-5070ti');
-      build.psu = partsDB.psus.find(x=>x.id==='psu-1000');
-      build.case_ = partsDB.cases.find(x=>x.id==='case-4000d');
-      build.storageNVMe = [partsDB.storages.find(x=>x.id==='nvme-2tb-gen4')];
-      build.storageSATA = [partsDB.storages.find(x=>x.id==='sata-ssd-1tb')];
-      render(); renderAllMeta();
-    }
-
     function renderAllMeta(){
       const { estLoad, recPSU, issues } = checkCompatibility(build);
       document.getElementById('estLoad').textContent = `${estLoad} W`;
@@ -559,6 +593,24 @@
     // init
     render();
     renderAllMeta();
+
+    // If a build is present in the URL (?b=...), apply it
+    try {
+      const params = new URLSearchParams(location.search);
+      const b64 = params.get('b');
+      if (b64) {
+        const json = decodeBase64Url(b64);
+        const ids = JSON.parse(json);
+        applyIdsToBuild(ids);
+        // Force full refresh of panels
+        const root = document.getElementById('content');
+        if (root) root.innerHTML = '';
+        render();
+        renderAllMeta();
+      }
+    } catch (e) {
+      console.warn('Failed to load build from link:', e);
+    }
   </script>
 </body>
 </html>
