@@ -32,6 +32,11 @@
           <div class="text-xs text-zinc-500">Recom. PSU</div>
           <div id="recPsu" class="font-semibold">0 W</div>
         </div>
+        <!-- Live Quote -->
+        <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+          <div class="text-xs text-zinc-500">Quote (1.15×)</div>
+          <div id="quoteTotal" class="font-semibold">A$0.00</div>
+        </div>
         <button id="btnExport" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-black">Copy Link</button>
         <button id="btnCopySpecs" class="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200">Copy Specs</button>
         <button id="btnClear" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Clear</button>
@@ -103,14 +108,10 @@
   </template>
 
   <script>
-  // == External parts loading ==
-  // Defaults to 'parts.json' in the same directory. You can override via:
-  //   1) window.PARTS_URL (set before this script)
-  //   2) ?parts=yourfile.json in the URL
+  // === External parts loading ===
   const urlParam = new URLSearchParams(location.search).get('parts');
   const PARTS_URL = (window.PARTS_URL || urlParam || 'parts.json');
 
-  // Minimal schema guard (non-fatal): ensure arrays exist
   function normalizePartsDB(db) {
     const blank = { cpus:[], motherboards:[], rams:[], gpus:[], storages:[], psus:[], cases:[] };
     return { ...blank, ...(db || {}) };
@@ -119,7 +120,6 @@
   async function loadParts() {
     const status = document.getElementById('dataStatus');
     try {
-      // cache-busting opt-in via ?v=123 on the file itself if needed
       const res = await fetch(PARTS_URL, { credentials: 'omit' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -129,9 +129,9 @@
     } catch (e) {
       status.innerHTML = `
         <div class="p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-700">
-          Could not load <code>${PARTS_URL}</code> (${e.message}). Check the file path/JSON. 
+          Could not load <code>${PARTS_URL}</code> (${e.message}). Check the file path/JSON.
         </div>`;
-      throw e; // Stop init so you notice the issue
+      throw e;
     }
   }
 
@@ -140,7 +140,7 @@
     cpu: null, motherboard: null, ram: null, gpu: null,
     storageNVMe: [], storageSATA: [], psu: null, case_: null,
   };
-  let partsDB = null; // will be populated by loadParts()
+  let partsDB = null;
 
   const steps = [
     { id: 'cpu', label: 'CPU', subtitle: 'Choose your processor (socket & memory support drive compatibility)' },
@@ -155,6 +155,26 @@
 
   // ---------- Utils ----------
   const pretty = (x) => JSON.stringify(x, null, 2);
+
+  // AUD currency formatter
+  const AUD = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' });
+
+  // Pricing helpers
+  function getPartCost(p) {
+    if (!p) return 0;
+    // Primary key per your request: "aquisitionCost" (intentional spelling)
+    // Fallback if you ever use "acquisitionCost".
+    return Number(p.aquisitionCost ?? p.acquisitionCost ?? 0) || 0;
+  }
+  function computeCosts(b) {
+    const items = [
+      b.cpu, b.motherboard, b.ram, b.gpu, b.psu, b.case_,
+      ...(b.storageNVMe || []), ...(b.storageSATA || [])
+    ].filter(Boolean);
+    const subtotal = items.reduce((sum, p) => sum + getPartCost(p), 0);
+    const quote = subtotal * 1.15; // 15% uplift
+    return { subtotal, quote };
+  }
 
   function estimateWattage(b) {
     const baseBoard = 50;
@@ -457,10 +477,36 @@
       row('PSU', build.psu && `${build.psu.brand} ${build.psu.model} (${build.psu.wattage}W)`);
       row('Case', build.case_ && `${build.case_.brand} ${build.case_.model}`);
 
+      // Power meta
       const meta = document.createElement('div'); meta.className='grid grid-cols-2 gap-3';
       meta.innerHTML = `
         <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"><div class="text-xs text-zinc-500">Estimated Load</div><div class="font-semibold">${estimateWattage(build).estLoad} W</div></div>
         <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"><div class="text-xs text-zinc-500">Recommended PSU</div><div class="font-semibold">${estimateWattage(build).recPSU} W</div></div>`;
+
+      // Pricing
+      const { subtotal, quote } = computeCosts(build);
+      const price = document.createElement('div');
+      price.className = 'grid gap-3';
+      price.innerHTML = `
+        <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+          <div class="text-xs text-zinc-500">Parts Subtotal</div>
+          <div class="font-semibold">${AUD.format(subtotal)}</div>
+        </div>
+        <div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+          <div class="text-xs text-zinc-500">Quote (1.15×)</div>
+          <div class="font-semibold">${AUD.format(quote)}</div>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnCopyQuote" class="px-3 py-2 rounded-lg bg-zinc-900 text-white hover:bg-black">Copy Quote</button>
+        </div>
+      `;
+      price.querySelector('#btnCopyQuote').addEventListener('click', () => {
+        const lines = [
+          `Parts Subtotal: ${AUD.format(subtotal)}`,
+          `Quote (1.15×): ${AUD.format(quote)}`
+        ];
+        navigator.clipboard.writeText(lines.join('\n'));
+      });
 
       const comp = checkCompatibility(build);
       const msg = document.createElement('div');
@@ -499,14 +545,19 @@
       });
       actions.appendChild(b1); actions.appendChild(b2);
 
-      right.appendChild(meta); right.appendChild(msg); if (comp.warns.length) right.appendChild(warn); right.appendChild(actions);
+      right.appendChild(meta);
+      right.appendChild(price);
+      right.appendChild(msg);
+      if (comp.warns.length) right.appendChild(warn);
+      right.appendChild(actions);
+
       grid.appendChild(left); grid.appendChild(right); listSUM.appendChild(grid);
     }
     drawSummary();
     content.appendChild(secSUM);
 
     document.getElementById('filterCompat').addEventListener('change', render);
-    window._redraw = { }; // noop anchor for previous code
+    window._redraw = { }; // anchor
   }
 
   function encodeBase64Url(str){
@@ -538,6 +589,7 @@
     build.gpu = findById(partsDB.gpus, ids.gpu);
     build.psu = findById(partsDB.psus, ids.psu);
     build.case_ = findById(partsDB.cases, ids.case_);
+
     build.storageNVMe = Array.isArray(ids.storageNVMe) ? ids.storageNVMe.map(id => findById(partsDB.storages, id)).filter(Boolean) : [];
     build.storageSATA = Array.isArray(ids.storageSATA) ? ids.storageSATA.map(id => findById(partsDB.storages, id)).filter(Boolean) : [];
   }
@@ -594,6 +646,7 @@
   }
   function renderAllMeta(){
     const { estLoad, recPSU, issues } = checkCompatibility(build);
+    // Power cards
     if (!build.cpu && !build.motherboard && !build.ram && !build.gpu && !build.psu && !build.case_ &&
         (!build.storageNVMe || build.storageNVMe.length===0) && (!build.storageSATA || build.storageSATA.length===0)) {
       document.getElementById('estLoad').textContent = `0 W`;
@@ -602,6 +655,13 @@
       document.getElementById('estLoad').textContent = `${estLoad} W`;
       document.getElementById('recPsu').textContent = `${recPSU} W`;
     }
+
+    // Live quote in header
+    const { quote } = computeCosts(build);
+    const qt = document.getElementById('quoteTotal');
+    if (qt) qt.textContent = AUD.format(quote);
+
+    // Status + issues/warnings
     const dot = document.getElementById('statusDot'); dot.style.background = (issues.length===0? '#10b981' : '#ef4444');
 
     const box = document.getElementById('issuesBox'); box.innerHTML='';
@@ -619,34 +679,34 @@
     }
   }
 
-  document.getElementById('btnExport').onclick = copyLink;
-  document.getElementById('btnCopySpecs').onclick = function(){
-    const lines = [];
-    if (build.cpu) lines.push('CPU: ' + build.cpu.brand + ' ' + build.cpu.model);
-    if (build.motherboard) lines.push('Motherboard: ' + build.motherboard.brand + ' ' + build.motherboard.model);
-    if (build.ram) lines.push('RAM: ' + build.ram.brand + ' ' + build.ram.model);
-    if (build.gpu) lines.push('GPU: ' + build.gpu.brand + ' ' + build.gpu.model);
-    if (build.psu) lines.push('PSU: ' + build.psu.brand + ' ' + build.psu.model);
-    if (build.case_) lines.push('Case: ' + build.case_.brand + ' ' + build.case_.model);
-    (build.storageNVMe||[]).forEach((s,i)=>lines.push('NVMe ' + (i+1) + ': ' + s.brand + ' ' + s.model));
-    (build.storageSATA||[]).forEach((s,i)=>lines.push('SATA ' + (i+1) + ': ' + s.brand + ' ' + s.model));
-    navigator.clipboard.writeText(lines.join('\n'));
-  };
-  document.getElementById('btnClear').onclick = () => {
-    build.cpu=null; build.motherboard=null; build.ram=null; build.gpu=null;
-    build.storageNVMe=[]; build.storageSATA=[]; build.psu=null; build.case_=null;
-    render(); renderAllMeta();
-  };
-
-  // Boot sequence: load parts first, then render UI
+  // Boot
   (async function init(){
     try{
-      partsDB = await loadParts();   // <— external JSON here
+      partsDB = await loadParts();
       render();
       renderAllMeta();
       window.applyLinkToBuild = applyLinkToBuild;
       window.addEventListener('hashchange', window.applyLinkToBuild);
       window.applyLinkToBuild();
+      // Buttons
+      document.getElementById('btnExport').onclick = copyLink;
+      document.getElementById('btnCopySpecs').onclick = function(){
+        const lines = [];
+        if (build.cpu) lines.push('CPU: ' + build.cpu.brand + ' ' + build.cpu.model);
+        if (build.motherboard) lines.push('Motherboard: ' + build.motherboard.brand + ' ' + build.motherboard.model);
+        if (build.ram) lines.push('RAM: ' + build.ram.brand + ' ' + build.ram.model);
+        if (build.gpu) lines.push('GPU: ' + build.gpu.brand + ' ' + build.gpu.model);
+        if (build.psu) lines.push('PSU: ' + build.psu.brand + ' ' + build.psu.model);
+        if (build.case_) lines.push('Case: ' + build.case_.brand + ' ' + build.case_.model);
+        (build.storageNVMe||[]).forEach((s,i)=>lines.push('NVMe ' + (i+1) + ': ' + s.brand + ' ' + s.model));
+        (build.storageSATA||[]).forEach((s,i)=>lines.push('SATA ' + (i+1) + ': ' + s.brand + ' ' + s.model));
+        navigator.clipboard.writeText(lines.join('\n'));
+      };
+      document.getElementById('btnClear').onclick = () => {
+        build.cpu=null; build.motherboard=null; build.ram=null; build.gpu=null;
+        build.storageNVMe=[]; build.storageSATA=[]; build.psu=null; build.case_=null;
+        render(); renderAllMeta();
+      };
     } catch (e) {
       console.error('Init failed:', e);
     }
