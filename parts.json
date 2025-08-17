@@ -1,60 +1,60 @@
 {
   "cpus": [
-    {"id":"cpu-12400f","brand":"Intel","model":"Core i5-12400F","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":65,"igpu":false,"pcieVersion":5},
-    {"id":"cpu-13400f","brand":"Intel","model":"Core i5-13400F","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":65,"igpu":false,"pcieVersion":5},
-    {"id":"cpu-14400f","brand":"Intel","model":"Core i5-14400F","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":65,"igpu":false,"pcieVersion":5},
-    {"id":"cpu-14600kf","brand":"Intel","model":"Core i5-14600KF","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":125,"igpu":false,"pcieVersion":5},
-    {"id":"cpu-14700kf","brand":"Intel","model":"Core i7-14700KF","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":125,"igpu":false,"pcieVersion":5},
-    {"id":"cpu-14900kf","brand":"Intel","model":"Core i9-14900KF","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":125,"igpu":false,"pcieVersion":5},
-    {"id":"cpu-5500","brand":"AMD","model":"Ryzen 5 5500","socket":"AM4","supportedMemory":["DDR4"],"tdp":65,"igpu":false,"pcieVersion":4},
-    {"id":"cpu-5600","brand":"AMD","model":"Ryzen 5 5600","socket":"AM4","supportedMemory":["DDR4"],"tdp":65,"igpu":false,"pcieVersion":4},
-    {"id":"cpu-7500f","brand":"AMD","model":"Ryzen 5 7500F","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":false,"pcieVersion":5},
-    {"id":"cpu-7600","brand":"AMD","model":"Ryzen 5 7600","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":true,"pcieVersion":5},
-    {"id":"cpu-7600x","brand":"AMD","model":"Ryzen 5 7600X","socket":"AM5","supportedMemory":["DDR5"],"tdp":105,"igpu":true,"pcieVersion":5},
-    {"id":"cpu-7700","brand":"AMD","model":"Ryzen 5 7700","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":true,"pcieVersion":5},
-    {"id":"cpu-8400f","brand":"AMD","model":"Ryzen 5 8400F","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":false,"pcieVersion":5},
-    {"id":"cpu-9600x","brand":"AMD","model":"Ryzen 5 9600X","socket":"AM5","supportedMemory":["DDR5"],"tdp":105,"igpu":true,"pcieVersion":5},
-    {"id":"cpu-5700x","brand":"AMD","model":"Ryzen 7 5700X","socket":"AM4","supportedMemory":["DDR4"],"tdp":65,"igpu":false,"pcieVersion":4},
-    {"id":"cpu-5800x","brand":"AMD","model":"Ryzen 7 5800X","socket":"AM4","supportedMemory":["DDR4"],"tdp":105,"igpu":false,"pcieVersion":4},
-    {"id":"cpu-7700x","brand":"AMD","model":"Ryzen 7 7700","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":true,"pcieVersion":5},
-    {"id":"cpu-7800x3d","brand":"AMD","model":"Ryzen 7 7800X3D","socket":"AM5","supportedMemory":["DDR5"],"tdp":120,"igpu":true,"pcieVersion":5},
-    {"id":"cpu-8700f","brand":"AMD","model":"Ryzen 7 8700F","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":false,"pcieVersion":5}
+    {"id":"cpu-12400f","brand":"Intel","model":"Core i5-12400F","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":65,"igpu":false,"pcieVersion":5,"aquisitionCost":160},
+    {"id":"cpu-13400f","brand":"Intel","model":"Core i5-13400F","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":65,"igpu":false,"pcieVersion":5,"aquisitionCost":200},
+    {"id":"cpu-14400f","brand":"Intel","model":"Core i5-14400F","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":65,"igpu":false,"pcieVersion":5,"aquisitionCost":224},
+    {"id":"cpu-14600kf","brand":"Intel","model":"Core i5-14600KF","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":125,"igpu":false,"pcieVersion":5,"aquisitionCost":355},
+    {"id":"cpu-14700kf","brand":"Intel","model":"Core i7-14700KF","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":125,"igpu":false,"pcieVersion":5,"aquisitionCost":535},
+    {"id":"cpu-14900kf","brand":"Intel","model":"Core i9-14900KF","socket":"LGA1700","supportedMemory":["DDR4","DDR5"],"tdp":125,"igpu":false,"pcieVersion":5,"aquisitionCost":715},
+    {"id":"cpu-5500","brand":"AMD","model":"Ryzen 5 5500","socket":"AM4","supportedMemory":["DDR4"],"tdp":65,"igpu":false,"pcieVersion":4,"aquisitionCost":120},
+    {"id":"cpu-5600","brand":"AMD","model":"Ryzen 5 5600","socket":"AM4","supportedMemory":["DDR4"],"tdp":65,"igpu":false,"pcieVersion":4,"aquisitionCost":160},
+    {"id":"cpu-7500f","brand":"AMD","model":"Ryzen 5 7500F","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":false,"pcieVersion":5,"aquisitionCost":250},
+    {"id":"cpu-7600","brand":"AMD","model":"Ryzen 5 7600","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":true,"pcieVersion":5,"aquisitionCost":317},
+    {"id":"cpu-7600x","brand":"AMD","model":"Ryzen 5 7600X","socket":"AM5","supportedMemory":["DDR5"],"tdp":105,"igpu":true,"pcieVersion":5,"aquisitionCost":350},
+    {"id":"cpu-7700","brand":"AMD","model":"Ryzen 5 7700","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":true,"pcieVersion":5,"aquisitionCost":475},
+    {"id":"cpu-8400f","brand":"AMD","model":"Ryzen 5 8400F","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":false,"pcieVersion":5,"aquisitionCost":215},
+    {"id":"cpu-9600x","brand":"AMD","model":"Ryzen 5 9600X","socket":"AM5","supportedMemory":["DDR5"],"tdp":105,"igpu":true,"pcieVersion":5,"aquisitionCost":399},
+    {"id":"cpu-5700x","brand":"AMD","model":"Ryzen 7 5700X","socket":"AM4","supportedMemory":["DDR4"],"tdp":65,"igpu":false,"pcieVersion":4,"aquisitionCost":270},
+    {"id":"cpu-5800x","brand":"AMD","model":"Ryzen 7 5800X","socket":"AM4","supportedMemory":["DDR4"],"tdp":105,"igpu":false,"pcieVersion":4,"aquisitionCost":320},
+    {"id":"cpu-7700x","brand":"AMD","model":"Ryzen 7 7700","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":true,"pcieVersion":5,"aquisitionCost":520},
+    {"id":"cpu-7800x3d","brand":"AMD","model":"Ryzen 7 7800X3D","socket":"AM5","supportedMemory":["DDR5"],"tdp":120,"igpu":true,"pcieVersion":5,"aquisitionCost":699},
+    {"id":"cpu-8700f","brand":"AMD","model":"Ryzen 7 8700F","socket":"AM5","supportedMemory":["DDR5"],"tdp":65,"igpu":false,"pcieVersion":5,"aquisitionCost":369}
   ],
   "motherboards": [
-    {"id":"mb-z690-ddr5","brand":"MSI","model":"PRO Z690-A DDR5","socket":"LGA1700","memoryType":"DDR5","dimmSlots":4,"maxMemoryGB":128,"formFactor":"ATX","m2Slots":4,"sataPorts":6,"pcieX16Slots":2,"pcieVersion":5,"chipset":"Z690"},
-    {"id":"mb-b660-ddr4","brand":"ASUS","model":"TUF B660-PLUS WIFI D4","socket":"LGA1700","memoryType":"DDR4","dimmSlots":4,"maxMemoryGB":128,"formFactor":"ATX","m2Slots":2,"sataPorts":4,"pcieX16Slots":1,"pcieVersion":4,"chipset":"B660"},
-    {"id":"mb-b650m-ddr5","brand":"Gigabyte","model":"B650M AORUS ELITE","socket":"AM5","memoryType":"DDR5","dimmSlots":4,"maxMemoryGB":192,"formFactor":"mATX","m2Slots":3,"sataPorts":4,"pcieX16Slots":1,"pcieVersion":4,"chipset":"B650"},
-    {"id":"mb-b550m-ddr4","brand":"Gigabyte","model":"B550M AORUS ELITE","socket":"AM4","memoryType":"DDR4","dimmSlots":4,"maxMemoryGB":128,"formFactor":"mATX","m2Slots":2,"sataPorts":4,"pcieX16Slots":1,"pcieVersion":4,"chipset":"B550"},
-    {"id":"mb-z97-ddr3","brand":"ASUS","model":"Z97-A","socket":"LGA1150","memoryType":"DDR3","dimmSlots":4,"maxMemoryGB":32,"formFactor":"ATX","m2Slots":1,"sataPorts":6,"pcieX16Slots":2,"pcieVersion":3,"chipset":"Z97"}
+    {"id":"mb-z690-ddr5","brand":"MSI","model":"PRO Z690-A DDR5","socket":"LGA1700","memoryType":"DDR5","dimmSlots":4,"maxMemoryGB":128,"formFactor":"ATX","m2Slots":4,"sataPorts":6,"pcieX16Slots":2,"pcieVersion":5,"chipset":"Z690","aquisitionCost":299},
+    {"id":"mb-b660-ddr4","brand":"ASUS","model":"TUF B660-PLUS WIFI D4","socket":"LGA1700","memoryType":"DDR4","dimmSlots":4,"maxMemoryGB":128,"formFactor":"ATX","m2Slots":2,"sataPorts":4,"pcieX16Slots":1,"pcieVersion":4,"chipset":"B660","aquisitionCost":249},
+    {"id":"mb-b650m-ddr5","brand":"Gigabyte","model":"B650M AORUS ELITE","socket":"AM5","memoryType":"DDR5","dimmSlots":4,"maxMemoryGB":192,"formFactor":"mATX","m2Slots":3,"sataPorts":4,"pcieX16Slots":1,"pcieVersion":4,"chipset":"B650","aquisitionCost":269},
+    {"id":"mb-b550m-ddr4","brand":"Gigabyte","model":"B550M AORUS ELITE","socket":"AM4","memoryType":"DDR4","dimmSlots":4,"maxMemoryGB":128,"formFactor":"mATX","m2Slots":2,"sataPorts":4,"pcieX16Slots":1,"pcieVersion":4,"chipset":"B550","aquisitionCost":190},
+    {"id":"mb-z97-ddr3","brand":"ASUS","model":"Z97-A","socket":"LGA1150","memoryType":"DDR3","dimmSlots":4,"maxMemoryGB":32,"formFactor":"ATX","m2Slots":1,"sataPorts":6,"pcieX16Slots":2,"pcieVersion":3,"chipset":"Z97","aquisitionCost":120}
   ],
   "rams": [
-    {"id":"ram-ddr5-32-6000","brand":"G.Skill","model":"Ripjaws S5 32GB (2x16) 6000","type":"DDR5","modules":2,"sizeGB":32,"speedMT":6000},
-    {"id":"ram-ddr5-64-6000","brand":"Patriot","model":"Viper Venom 64GB (2x32) 6000 CL30","type":"DDR5","modules":2,"sizeGB":64,"speedMT":6000},
-    {"id":"ram-ddr4-32-3600","brand":"Corsair","model":"Vengeance 32GB (2x16) 3600","type":"DDR4","modules":2,"sizeGB":32,"speedMT":3600},
-    {"id":"ram-ddr4-64-3200","brand":"Kingston","model":"Fury 64GB (2x32) 3200","type":"DDR4","modules":2,"sizeGB":64,"speedMT":3200},
-    {"id":"ram-ddr3-16-1600","brand":"Crucial","model":"Ballistix 16GB (2x8) 1600","type":"DDR3","modules":2,"sizeGB":16,"speedMT":1600}
+    {"id":"ram-ddr5-32-6000","brand":"G.Skill","model":"Ripjaws S5 32GB (2x16) 6000","type":"DDR5","modules":2,"sizeGB":32,"speedMT":6000,"aquisitionCost":155},
+    {"id":"ram-ddr5-64-6000","brand":"Patriot","model":"Viper Venom 64GB (2x32) 6000 CL30","type":"DDR5","modules":2,"sizeGB":64,"speedMT":6000,"aquisitionCost":295},
+    {"id":"ram-ddr4-32-3600","brand":"Corsair","model":"Vengeance 32GB (2x16) 3600","type":"DDR4","modules":2,"sizeGB":32,"speedMT":3600,"aquisitionCost":129},
+    {"id":"ram-ddr4-64-3200","brand":"Kingston","model":"Fury 64GB (2x32) 3200","type":"DDR4","modules":2,"sizeGB":64,"speedMT":3200,"aquisitionCost":265},
+    {"id":"ram-ddr3-16-1600","brand":"Crucial","model":"Ballistix 16GB (2x8) 1600","type":"DDR3","modules":2,"sizeGB":16,"speedMT":1600,"aquisitionCost":65}
   ],
   "gpus": [
-    {"id":"gpu-4070super","brand":"NVIDIA","model":"RTX 4070 SUPER","tdp":220,"lengthMM":260,"slotWidth":2,"pciePower8Pin":2},
-    {"id":"gpu-5070ti","brand":"NVIDIA","model":"RTX 5070 Ti","tdp":285,"lengthMM":300,"slotWidth":2.5,"pciePower8Pin":3},
-    {"id":"gpu-7900xt","brand":"AMD","model":"Radeon RX 7900 XT","tdp":315,"lengthMM":345,"slotWidth":2.5,"pciePower8Pin":3},
-    {"id":"gpu-rx6600","brand":"AMD","model":"Radeon RX 6600","tdp":132,"lengthMM":200,"slotWidth":2,"pciePower8Pin":1}
+    {"id":"gpu-4070super","brand":"NVIDIA","model":"RTX 4070 SUPER","tdp":220,"lengthMM":260,"slotWidth":2,"pciePower8Pin":2,"aquisitionCost":799},
+    {"id":"gpu-5070ti","brand":"NVIDIA","model":"RTX 5070 Ti","tdp":285,"lengthMM":300,"slotWidth":2.5,"pciePower8Pin":3,"aquisitionCost":999},
+    {"id":"gpu-7900xt","brand":"AMD","model":"Radeon RX 7900 XT","tdp":315,"lengthMM":345,"slotWidth":2.5,"pciePower8Pin":3,"aquisitionCost":999},
+    {"id":"gpu-rx6600","brand":"AMD","model":"Radeon RX 6600","tdp":132,"lengthMM":200,"slotWidth":2,"pciePower8Pin":1,"aquisitionCost":269}
   ],
   "storages": [
-    {"id":"nvme-2tb-gen4","brand":"Crucial","model":"P3 Plus 2TB NVMe","type":"NVMe","sizeGB":2000,"nvmeGen":4},
-    {"id":"nvme-1tb-gen4","brand":"Crucial","model":"P3 Plus 1TB NVMe","type":"NVMe","sizeGB":1000,"nvmeGen":4},
-    {"id":"hdd-8tb","brand":"Seagate","model":"BarraCuda 8TB","type":"SATA","sizeGB":8000},
-    {"id":"hdd-8tb-firecuda","brand":"Seagate","model":"FireCuda 8TB","type":"SATA","sizeGB":8000}
+    {"id":"nvme-2tb-gen4","brand":"Crucial","model":"P3 Plus 2TB NVMe","type":"NVMe","sizeGB":2000,"nvmeGen":4,"aquisitionCost":169},
+    {"id":"nvme-1tb-gen4","brand":"Crucial","model":"P3 Plus 1TB NVMe","type":"NVMe","sizeGB":1000,"nvmeGen":4,"aquisitionCost":89},
+    {"id":"hdd-8tb","brand":"Seagate","model":"BarraCuda 8TB","type":"SATA","sizeGB":8000,"aquisitionCost":189},
+    {"id":"hdd-8tb-firecuda","brand":"Seagate","model":"FireCuda 8TB","type":"SATA","sizeGB":8000,"aquisitionCost":259}
   ],
   "psus": [
-    {"id":"psu-750","brand":"Corsair","model":"RM750e (80+ Gold)","wattage":750,"lengthMM":160,"pcie8pin":3},
-    {"id":"psu-850","brand":"SilverStone","model":"DA850 (80+ Gold)","wattage":850,"lengthMM":140,"pcie8pin":4},
-    {"id":"psu-1000","brand":"Seasonic","model":"Focus 1000 (80+ Gold)","wattage":1000,"lengthMM":150,"pcie8pin":5},
-    {"id":"psu-550","brand":"EVGA","model":"550 B5 (80+ Bronze)","wattage":550,"lengthMM":150,"pcie8pin":2}
+    {"id":"psu-750","brand":"Corsair","model":"RM750e (80+ Gold)","wattage":750,"lengthMM":160,"pcie8pin":3,"aquisitionCost":145},
+    {"id":"psu-850","brand":"SilverStone","model":"DA850 (80+ Gold)","wattage":850,"lengthMM":140,"pcie8pin":4,"aquisitionCost":165},
+    {"id":"psu-1000","brand":"Seasonic","model":"Focus 1000 (80+ Gold)","wattage":1000,"lengthMM":150,"pcie8pin":5,"aquisitionCost":229},
+    {"id":"psu-550","brand":"EVGA","model":"550 B5 (80+ Bronze)","wattage":550,"lengthMM":150,"pcie8pin":2,"aquisitionCost":89}
   ],
   "cases": [
-    {"id":"case-a3","brand":"Lian Li","model":"DAN A3 Mesh","supportedFormFactors":["mATX","ITX"],"gpuMaxLengthMM":380,"psuMaxLengthMM":160,"coolerClearanceMM":158},
-    {"id":"case-4000d","brand":"Corsair","model":"4000D Airflow","supportedFormFactors":["ATX","mATX","ITX"],"gpuMaxLengthMM":360,"psuMaxLengthMM":180,"coolerClearanceMM":170},
-    {"id":"case-nr200p","brand":"Cooler Master","model":"NR200P","supportedFormFactors":["ITX"],"gpuMaxLengthMM":330,"psuMaxLengthMM":180,"coolerClearanceMM":155}
+    {"id":"case-a3","brand":"Lian Li","model":"DAN A3 Mesh","supportedFormFactors":["mATX","ITX"],"gpuMaxLengthMM":380,"psuMaxLengthMM":160,"coolerClearanceMM":158,"aquisitionCost":159},
+    {"id":"case-4000d","brand":"Corsair","model":"4000D Airflow","supportedFormFactors":["ATX","mATX","ITX"],"gpuMaxLengthMM":360,"psuMaxLengthMM":180,"coolerClearanceMM":170,"aquisitionCost":139},
+    {"id":"case-nr200p","brand":"Cooler Master","model":"NR200P","supportedFormFactors":["ITX"],"gpuMaxLengthMM":330,"psuMaxLengthMM":180,"coolerClearanceMM":155,"aquisitionCost":129}
   ]
 }
