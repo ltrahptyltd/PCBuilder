@@ -43,6 +43,12 @@
     {"id":"gpu-5070-asus-prime","brand":"ASUS","model":"PRIME GeForce RTX 5070 12GB","tdp":220,"lengthMM":260,"slotWidth":2,"pciePower8Pin":2,"marketPrice":950,"aquisitionCost":970},
     {"id":"gpu-5060ti-msi-ventus","brand":"MSI","model":"GeForce RTX 5060 Ti Ventus 2X OC Plus 16GB","tdp":220,"lengthMM":250,"slotWidth":2,"pciePower8Pin":2,"marketPrice":800,"aquisitionCost":850}
   ],
+  "psus": [
+    {"id":"psu-550-basic","brand":"Generic","model":"Basic 550W (80+ Bronze)","wattage":550,"lengthMM":140,"pcie8pin":2,"marketPrice":50,"aquisitionCost":50},
+    {"id":"psu-650-basic","brand":"Generic","model":"Basic 650W (80+ Bronze)","wattage":650,"lengthMM":140,"pcie8pin":3,"marketPrice":60,"aquisitionCost":60},
+    {"id":"psu-750-basic","brand":"Generic","model":"Basic 750W (80+ Bronze)","wattage":750,"lengthMM":150,"pcie8pin":3,"marketPrice":80,"aquisitionCost":80},
+    {"id":"psu-850-basic","brand":"Generic","model":"Basic 850W (80+ Bronze)","wattage":850,"lengthMM":150,"pcie8pin":4,"marketPrice":120,"aquisitionCost":120}
+  ],
   "cases": [
     {"id":"case-okinos-mirage4-blk","brand":"Okinos","model":"Mirage 4 Black","supportedFormFactors":["ATX","mATX","ITX"],"gpuMaxLengthMM":340,"psuMaxLengthMM":160,"coolerClearanceMM":160,"marketPrice":85,"aquisitionCost":85},
     {"id":"case-okinos-mirage4-wht","brand":"Okinos","model":"Mirage 4 White","supportedFormFactors":["ATX","mATX","ITX"],"gpuMaxLengthMM":340,"psuMaxLengthMM":160,"coolerClearanceMM":160,"marketPrice":85,"aquisitionCost":85},
